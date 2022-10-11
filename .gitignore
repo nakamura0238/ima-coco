@@ -1,0 +1,18 @@
+node_modules
+
+# nginx /nginx
+/nginx/error
+
+# フロントエンド /front
+/front/yarn.lock
+/front/package-lock.json
+
+# バックエンド /api
+/api/yarn.lock
+/api/package-lock.json
+
+# データベース /db
+/db/logs
+/db/mysql_data
+
+.env

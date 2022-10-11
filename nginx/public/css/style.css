@@ -1,0 +1,14 @@
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%;
+    /* font-size: 1.6rem; */
+    background-color: #a3b9e0;
+}
+
+body {
+    font-size: 1.5rem;
+}

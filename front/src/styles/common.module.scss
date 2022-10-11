@@ -1,0 +1,15 @@
+.container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 375px;
+  max-width: 640px;
+  min-height: 100vh;
+  padding-bottom: calc(3rem + 20px);
+  margin: 0 auto;
+  background-color: #ddddff;
+}
+
+.container input {
+  border: 1px solid #333333;
+}

@@ -1,0 +1,44 @@
+.roomName {
+  font-size: 2rem;
+}
+
+
+/**
+*  stateList
+**/
+.stateListBox {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 20px;
+}
+
+.stateItem {
+  width: 100%;
+  padding: 5px 10px;
+  border-top: 1px solid #333333;
+  border-right: 2px solid #333333;
+  border-bottom: 2px solid #333333;
+  border-left: 1px solid #333333;
+}
+
+
+/**
+*  stateButtonList
+**/
+.stateButtonContainer {
+  margin-top: auto;
+  padding: 10px;
+}
+
+.stateButtonBox {
+  display: flex;
+  gap: 10px;
+}
+
+.stateButton {
+  display: inline-block;
+  padding: 5px;
+  border: 1px solid #888888;
+  border-radius: 5px;
+}
