@@ -4,7 +4,7 @@ import {useRouter} from 'next/router';
 import {destroyCookie, parseCookies} from 'nookies';
 import axios from 'axios';
 import {Layout} from '../components/Layout';
-import {Footer} from '../components/Footer';
+import Footer from '../components/Footer';
 
 import {visitPageState} from '../states/visitPage';
 import {useSetRecoilState} from 'recoil';
@@ -25,6 +25,11 @@ const Home = (props: any) => {
     route.push('/');
   };
 
+  const executeSQL = async () => {
+    const aaa = await axios.get('/api/room/aa/aa');
+    console.log(aaa);
+  };
+
 
   return (
     <Layout>
@@ -32,6 +37,7 @@ const Home = (props: any) => {
       {login?
         <div>
           <button onClick={logout}>ログアウト</button>
+          <button onClick={executeSQL}> SQL実行</button>
         </div>:
         undefined
       }

@@ -2,18 +2,21 @@ import type {NextPageContext} from 'next';
 import {useState, useEffect} from 'react';
 import React from 'react';
 import {useRouter} from 'next/router';
-import {destroyCookie, parseCookies} from 'nookies';
+import {parseCookies} from 'nookies';
 import axios from 'axios';
 import {useRecoilValue, useSetRecoilState} from 'recoil';
 
 import {Layout} from '../../components/Layout';
-import {Footer} from '../../components/Footer';
+import Footer from '../../components/Footer';
 import {visitPageState} from '../../states/visitPage';
 import {logout} from '../../actions/Logout';
 
 
 const User = (props: any) => {
   const route = useRouter();
+
+  console.log('userページ');
+  console.log(props);
 
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -62,24 +65,13 @@ export const getServerSideProps =
         },
       };
 
-      const check: checkResult = await axios.post('http://nginx:80/api/user/check', {}, headers);
-      const checkResult = check.data;
-      console.log(check);
-      if (checkResult?.check) {
-        return {
-          props: {
-            login: true,
-          },
-        };
-      } else {
-        return {
-          props: {
-            login: false,
-          },
-        };
-      }
+      const res: any = await axios.get('http://nginx:80/api/user/info', headers);
+      return {
+        props: {
+          ...res.data,
+        },
+      };
     } catch (err) {
-      // console.log('--- index ---');
       console.log(err);
       return {
         redirect: {

@@ -10,7 +10,7 @@ import * as yup from 'yup';
 import {checkLoggedIn} from '../actions/LoggedIn';
 import {generateApiLink} from '../actions/generateApiLink';
 import {Layout} from '../components/Layout';
-import {Footer} from '../components/Footer';
+import Footer from '../components/Footer';
 import {useSetRecoilState} from 'recoil';
 import {visitPageState} from '../states/visitPage';
 import toast from 'react-hot-toast';

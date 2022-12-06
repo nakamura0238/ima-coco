@@ -15,10 +15,10 @@ type buttonType = {
   pageNum: number
 }
 
-export const Footer: React.FC<props> = ({login}) => {
+const Footer: React.FC<props> = ({login}) => {
   const visitPage = useRecoilValue(visitPageState);
 
-  const hoge: buttonType[] = [
+  const buttonLogin: buttonType[] = [
     {
       path: '/room',
       label: 'room',
@@ -41,7 +41,7 @@ export const Footer: React.FC<props> = ({login}) => {
     },
   ];
 
-  const fuga: buttonType[] = [
+  const buttonLogout: buttonType[] = [
     {
       path: '/login',
       label: 'ログイン',
@@ -86,10 +86,10 @@ export const Footer: React.FC<props> = ({login}) => {
       <nav className={styles.nav}>
         {login?
           <>
-            {hoge.map((val, i) => <NavButton btnVal={val} key={i}/>)}
+            {buttonLogin.map((val, i) => <NavButton btnVal={val} key={i}/>)}
           </>:
           <>
-            {fuga.map((val, i) => <NavButton btnVal={val} key={i}/>)}
+            {buttonLogout.map((val, i) => <NavButton btnVal={val} key={i}/>)}
           </>
         }
       </nav>
@@ -97,3 +97,4 @@ export const Footer: React.FC<props> = ({login}) => {
   );
 };
 
+export default Footer;

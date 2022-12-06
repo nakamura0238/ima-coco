@@ -3,9 +3,7 @@ import cors from 'cors';
 
 // import {mainRouter} from './actions/main';
 import {userRouter} from './actions/users';
-// import {wantedRouter} from './actions/wanted_articles';
 import {stateRouter} from './actions/state';
-import {lineRouter} from './actions/line';
 import {roomRouter} from './actions/rooms';
 
 import {createServer} from 'http';
@@ -26,6 +24,7 @@ app.use(cors({
 },
 ));
 
+
 // ルーティングの設定
 // app.use('/', mainRouter);
 /**
@@ -36,7 +35,7 @@ app.use(cors({
 app.use('/user', userRouter);
 /**
    * get  "/user/"  : データ表示
-   * post "/user/"  : データ表示
+   * post "/user/"  : データ登録
    * get  "/user/db": データ取得
    * post "/user/db": データ挿入
    */
@@ -49,7 +48,6 @@ app.use('/state', stateRouter);
    * delete "/state/"  : データ削除
    */
 
-app.use('/line', lineRouter);
 app.use('/room', roomRouter);
 
 const httpServer = createServer(app);
@@ -62,7 +60,6 @@ const io = new Server(httpServer, {
 });
 
 socketManager(io);
-
 
 try {
   httpServer.listen(PORT, () => {

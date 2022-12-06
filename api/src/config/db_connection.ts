@@ -4,10 +4,10 @@ import {PrismaClient} from '@prisma/client';
 // .envファイルで管理する
 const dbConfig = {
   host: 'db',
-  // port: 13306,
+  port: 3306,
   user: 'root',
   password: 'root',
-  database: 'sandbox',
+  database: 'ima_coco',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -16,4 +16,4 @@ const dbConfig = {
 const pool = mysql.createPool(dbConfig);
 export const db = pool.promise();
 
-export const prisma = new PrismaClient();
+// export const prisma = new PrismaClient();

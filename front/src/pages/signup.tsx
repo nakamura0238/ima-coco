@@ -11,7 +11,7 @@ import {NextPageContext} from 'next';
 import {parseCookies, destroyCookie} from 'nookies';
 import {checkLoggedIn} from '../actions/LoggedIn';
 import {Layout} from '../components/Layout';
-import {Footer} from '../components/Footer';
+import Footer from '../components/Footer';
 import {visitPageState} from '../states/visitPage';
 import Image from 'next/image';
 

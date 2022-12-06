@@ -1,8 +1,10 @@
 import express, {Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
-import {prisma} from '../config/db_connection';
+import {db} from '../config/db_connection';
 import {auth} from '../middlewares/auth';
 import {SECRET_KEY} from '../config/keys';
+
+import mysql from 'mysql2';
 
 // eslint-disable-next-line new-cap
 export const userRouter = express.Router();
@@ -19,7 +21,7 @@ userRouter.post('/loggedin', auth, async (_req: Request, res: Response) => {
 
 // ログインチェック
 userRouter.post('/check', auth, async (_req: Request, res: Response) => {
-  console.log('check');
+  // console.log('check');
   try {
     return res.json({
       data: {
@@ -37,20 +39,19 @@ userRouter.post('/signup', async (_req: Request, res: Response) => {
   try {
     const req = _req.body;
 
-    // prisma
-    const check = await prisma.users.findUnique({
-      where: {uid: req.uid},
-    });
+    const [row] =
+        await db.execute<mysql.RowDataPacket[][]>(
+            'CALL registeredUser(?);',
+            [req.uid]);
+    // console.log('registeredUser: ', row[0]);
+    const check = row[0][0];
 
     // ユーザー未登録の確認
     if (!check) {
       // ユーザー未登録の時の処理
-      await prisma.users.create({
-        data: {
-          uid: req.uid,
-          password: req.password,
-        },
-      });
+      await db.execute<mysql.RowDataPacket[][]>(
+          'CALL signupUser(?, ?);',
+          [req.uid, req.password]);
 
       return res.json({
         check: true,
@@ -66,7 +67,7 @@ userRouter.post('/signup', async (_req: Request, res: Response) => {
       });
     }
   } catch (err) {
-
+    console.log(err);
   }
 });
 
@@ -80,19 +81,21 @@ type AuthLoginResponse = {
 userRouter.post('/login', async (_req: Request, res: Response) => {
   const req = _req.body;
 
-  const check = await prisma.users.findUnique({
-    where: {uid: req.uid},
-  });
+  const [row] =
+  await db.execute<mysql.RowDataPacket[][]>(
+      'CALL registeredUser(?);',
+      [req.uid]);
+  // console.log('registeredUser: ', row[0]);
+  const check = row[0][0];
+
 
   // ユーザー登録のチェック
   if (check) {
-    // prisma
-    const userData = await prisma.users.findFirst({
-      where: {
-        uid: req.uid,
-        password: req.password,
-      },
-    });
+    const [row] =
+    await db.execute<mysql.RowDataPacket[][]>(
+        'CALL loginUser(?, ?);',
+        [req.uid, req.password]);
+    const userData = row[0][0];
 
     // ユーザーの認証
     if (userData) {
@@ -122,3 +125,21 @@ userRouter.post('/login', async (_req: Request, res: Response) => {
   }
 });
 
+
+// ユーザーページ
+userRouter.get('/info', auth, async (_req: Request, res: Response) => {
+  const req = _req.body;
+  const userData = res.locals.userData;
+
+  // console.log(userData);
+  const [response] =
+    await db.execute<mysql.RowDataPacket[][]>(
+        'CALL getUserData(?, ?);',
+        [userData.id, userData.uid]);
+  // const userData = row[0][0];
+  // console.log(response[0]);
+  const data = response[0][0];
+  return res.json({
+    ...data,
+  });
+});

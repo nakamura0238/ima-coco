@@ -149,3 +149,7 @@ export const UpdatePatienceModal: React.FC<props> =
       </div>
     );
   };
+
+
+// 使用中フラグを追加
+// stateを使用中の場合削除できないようにする

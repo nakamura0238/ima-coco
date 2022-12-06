@@ -1,109 +1,127 @@
 import React, {useEffect, useState} from 'react';
 import {NextPageContext} from 'next';
 import {Layout} from '../../components/Layout';
-import {Footer} from '../../components/Footer';
+import Footer from '../../components/Footer';
 import axios from 'axios';
 import {useSetRecoilState} from 'recoil';
 import {visitPageState} from '../../states/visitPage';
 
-import {socket, socketAction} from '../../lib/socket';
+import {socket} from '../../lib/socket';
 import {returnHeader} from '../../actions/Cookie';
 
 import styles from '../../styles/inRoom.module.scss';
 
+import ShowStateList from '../../components/room/ShowStateList';
+import ShowStateButton from '../../components/room/ShowStateButton';
 
-const Room = (props: any) => {
-  const rooms = props.list.rooms[0];
-  const states = props.list.states;
+import QRCode from 'qrcode.react';
+import {useRouter} from 'next/router';
 
-  const obj = props.list.select;
-  console.dir(obj);
+type roomInfo = {
+  id: number;
+  roomName: string;
+  roomId: string;
+};
+type state = {
+  comment: string;
+  state: string;
+  uid: string;
+  displayName: string | null;
+};
+type userStates = {
+  id: number;
+  state: string;
+  common: number;
+};
+type userData = {
+  id: number;
+  uid: string;
+};
 
-  const id: number = props.id;
-  // const data = props.data;
-  const roomId = rooms.roomId;
-  const [stateList, setStateList] = useState(rooms.rooms[0].states);
+type inRoomInfo = {
+  roomInfo: roomInfo;
+  states: state[];
+  userStates: userStates[];
+  userData: userData;
+};
+
+const Room = (props: inRoomInfo) => {
+  console.log('run Room');
+  const roomInfo = props.roomInfo;
+  const states = props.states;
+  const userStates = props.userStates;
+
+  const id: number = roomInfo.id;
+  const roomUnique = roomInfo.roomId;
+
+  console.log('roomInfo', roomInfo);
+
+  const route = useRouter();
 
   // 現在のページ取得
   const setVisitPage = useSetRecoilState(visitPageState);
 
   useEffect(() => {
-    socket.emit('room_join', {room: roomId});
+    socket.emit('room_join', {room: roomUnique});
     setVisitPage(3);
   }, []);
 
-  socket.on('response', (roomData) => {
-    setStateList(roomData[0].rooms[0].states);
-  });
+
+  // ルームから退出
+  const leaveRoom = async () => {
+    console.log('ルームから退出します');
+
+    try {
+    // cookieの取得
+      const headers = returnHeader();
+      // ルームの情報を取得
+      await axios.delete(
+          `http://localhost/api/room/leave/${roomUnique}`,
+          headers,
+      );
+      route.replace('/room');
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <Layout>
       <p>ルームID：{id}</p>
-      <h1 className={styles.roomName}>-- {rooms.roomName} --</h1>
-      <button onClick={() => socketAction(roomId)}>
-        ソケット通信
-      </button>
-      {/* {showStateList(stateList)} */}
-      {showStateListSec(obj.states)}
-      {showStateButton(states)}
-      <Footer login={true}></Footer>
+      <button onClick={leaveRoom}>退出</button>
+      <h1 className={styles.roomName}>-- {roomInfo.roomName} --</h1>
+      <ShowStateList stateListData={states} />
+      <GenerateJoinUrl roomId={roomUnique}/>
+      <ShowStateButton
+        userStates={userStates}
+        roomUnique={roomUnique} />
+      <Footer login={true} />
     </Layout>
   );
 };
 
 export default Room;
 
-const showStateList = (list: any) => {
+type joinUrlProps= {
+  roomId: string
+}
+const GenerateJoinUrl: React.FC<joinUrlProps> = ({roomId}) => {
+  const [url, setUrl] = useState('');
+
+  const generateUrl = () => {
+    setUrl(`localhost/room/join/${roomId}`);
+  };
   return (
-    <div className={styles.stateListBox}>
-      {
-        list.map((val: any, i:number) => {
-          return (
-            <div className={styles.stateItem} key={i}>
-              <p>username: {val.roomUser.users.uid}</p>
-              <p>{val.states.state}</p>
-            </div>
-          );
-        })
-      }
-    </div>
+    <>
+      <p>{url}</p>
+      {url?
+        <QRCode
+          value={url} /> :
+        undefined}
+      <button onClick={generateUrl}>参加URL表示</button>
+    </>
   );
 };
-
-const showStateListSec = (list: any) => {
-  return (
-    <div className={styles.stateListBox}>
-      {
-        list.map((val: any, i:number) => {
-          return (
-            <div className={styles.stateItem} key={i}>
-              <p>username: {val.uid}</p>
-              <p>{val.state}</p>
-            </div>
-          );
-        })
-      }
-    </div>
-  );
-};
-
-const showStateButton = (states: any) => {
-  return (
-    <div className={styles.stateButtonContainer}>
-      <div className={styles.stateButtonBox}>
-        {states.map((val:any, i:any) => {
-          return (
-            <button className={styles.stateButton} key={i}>
-              {val.state}
-            </button>
-          );
-        })}
-      </div>
-      <input type="text" />
-    </div>
-  );
-};
-
 
 export const getServerSideProps = async (context: NextPageContext) => {
   try {
@@ -111,26 +129,38 @@ export const getServerSideProps = async (context: NextPageContext) => {
 
     // cookieの取得
     const headers = returnHeader(context);
-
     // ルームの情報を取得
+    const roomInfo = await axios.get(
+        `http://ima-coco_nginx:80/api/room/${id}`,
+        headers,
+    );
+    const roomInfoData = roomInfo.data;
 
-    const check = await axios.get(`http://ima-coco_nginx:80/api/room/${id}`, headers);
-    const checkResult = check.data;
-    // console.log(checkResult);
-    // console.log(checkResult.rooms[0].rooms[0].states);
+    // ルームに参加していない場合
+    if (roomInfoData.notJoin) {
+      return {
+        redirect: {
+          permanent: false,
+          destination: '/room/',
+        },
+      };
+    }
 
     return {
       props: {
-        id: id,
-        data: 'ルーム' + id + 'の状態リスト',
-        list: checkResult,
+        ...roomInfoData,
       },
     };
   } catch (err) {
     console.log(err);
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/login',
+      },
+    };
   }
 };
-
 
 // ルームへのユーザー追加
 /**

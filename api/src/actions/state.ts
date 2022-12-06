@@ -1,7 +1,8 @@
 import express, {NextFunction, Request, Response} from 'express';
-import {prisma} from '../config/db_connection';
+import {db} from '../config/db_connection';
 import {auth} from '../middlewares/auth';
 // import {SECRET_KEY} from '../config/keys';
+import mysql from 'mysql2';
 
 // eslint-disable-next-line new-cap
 export const stateRouter = express.Router();
@@ -9,24 +10,17 @@ export const stateRouter = express.Router();
 // state
 stateRouter.get('/', auth, async (_req: Request, res: Response) => {
   try {
-    const req = res.locals.userData;
-    console.log(req.uid);
+    const req = res.locals;
+    // console.log('iiiiiiiiiiiiii: ', req.uid);
+    const userData = req.userData;
 
-    const states = await prisma.state_data.findMany({
-      where: {
-        OR: [
-          {common: true},
-          {userId: req.id},
-        ],
-      },
-      select: {
-        id: true,
-        state: true,
-        common: true,
-      },
-    });
+    const [response] =
+    await db.execute<mysql.RowDataPacket[][]>(
+        'CALL getUserStateList(?)',
+        [userData.id]);
+    const states = response[0];
 
-    console.log('states', states);
+    // console.log('states', states);
     const resStates = states;
 
     return res.json({
@@ -43,7 +37,6 @@ stateRouter.get('/', auth, async (_req: Request, res: Response) => {
   }
 });
 
-
 // state
 stateRouter.post('/', auth,
     async (_req: Request, res: Response, next: NextFunction) => {
@@ -51,18 +44,13 @@ stateRouter.post('/', auth,
         const reqBody = _req.body; // リクエスト情報
         const user = res.locals.userData; // ユーザー情報
 
-        console.log('reqBody:', reqBody);
-        console.log('user:', user);
+        // console.log('reqBody:', reqBody);
+        // console.log('user:', user);
 
-        const createState = await prisma.state_data.create({
-          data: {
-            state: reqBody.state,
-            common: false,
-            userId: user.id,
-          },
-        });
-
-        console.log(createState);
+        await db.execute<mysql.RowDataPacket[][]>(
+            'CALL insertUserState(?, ?)',
+            [reqBody.state, user.id],
+        );
 
         res.send('OK');
       } catch (err) {
@@ -78,19 +66,13 @@ stateRouter.put('/', auth,
         const reqBody = _req.body; // リクエスト情報
         const user = res.locals.userData; // ユーザー情報
 
-        console.log('reqBody:', reqBody);
-        console.log('user:', user);
+        // console.log('reqBody:', reqBody);
+        // console.log('user:', user);
 
-        const createState = await prisma.state_data.update({
-          where: {
-            id: reqBody.id,
-          },
-          data: {
-            state: reqBody.state,
-          },
-        });
-
-        console.log(createState);
+        await db.execute<mysql.RowDataPacket[][]>(
+            'CALL updateUserState(?, ?)',
+            [reqBody.state, reqBody.id],
+        );
 
         res.send('OK');
       } catch (err) {
@@ -106,18 +88,16 @@ stateRouter.delete('/:id', auth,
         const reqBody = _req.body; // リクエスト情報
         const user = res.locals.userData; // ユーザー情報
 
-        console.log('reqBody:', reqBody);
-        console.log('user:', user);
+        // console.log('reqBody:', reqBody);
+        // console.log('user:', user);
 
         const id = Number(_req.params.id);
 
-        const createState = await prisma.state_data.delete({
-          where: {
-            id: id,
-          },
-        });
+        await db.execute<mysql.RowDataPacket[][]>(
+            'CALL deleteUserState(?)',
+            [id],
+        );
 
-        console.log(createState);
 
         res.send('OK');
       } catch (err) {

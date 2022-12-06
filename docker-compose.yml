@@ -12,6 +12,11 @@ services:
       - ./nginx/error/:/var/log/nginx/
     # environment:
     #   VIRTUAL_HOST: 'ima-coco'
+    logging:
+      driver: json-file
+      options:
+        max-file: '1'
+        max-size: 3m
     depends_on:
       - api
       - front
@@ -25,6 +30,11 @@ services:
     tty: true
     volumes:
       - ./api:/usr/src/app
+    logging:
+      driver: json-file
+      options:
+        max-file: '1'
+        max-size: 3m
     command: bash -c "yarn install && yarn dev"
     ports:
       - ${API_PORT}:3000
@@ -38,6 +48,11 @@ services:
     tty: true
     volumes: 
       - ./front:/usr/src/app
+    logging:
+      driver: json-file
+      options:
+        max-file: '1'
+        max-size: 3m
     command: bash -c "yarn install && yarn dev"
     ports: 
       - ${FRONT_PORT}:3000
@@ -51,7 +66,12 @@ services:
     volumes:
       - ./db/mysql_data:/var/lib/mysql
       - ./db/logs:/var/log/mysql
-      - ./db/config/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./db/conf.d:/etc/mysql/conf.d
+    logging:
+      driver: json-file
+      options:
+        max-file: '1'
+        max-size: 3m
     command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}

@@ -6,13 +6,13 @@ import {useRouter} from 'next/router';
 import {destroyCookie, parseCookies} from 'nookies';
 import axios from 'axios';
 import {useRecoilValue, useSetRecoilState} from 'recoil';
-import Image from 'next/image';
+// import Image from 'next/image';
 
 import {AddStateModal} from '../../components/state/add';
 import {UpdateStateModal} from '../../components/state/update';
 import {stateListState} from '../../states/stateList';
 import {Layout} from '../../components/Layout';
-import {Footer} from '../../components/Footer';
+import Footer from '../../components/Footer';
 import {visitPageState} from '../../states/visitPage';
 
 import styles from '../../styles/State.module.scss';
@@ -70,7 +70,6 @@ const StateList = (props: any) => {
         onClick={openAddModal}
         tabIndex={showAddModal ? -1: undefined}
         className={`${styles.addButton} ${styles.addPosition}`}>
-        {/* <Image src={'/icon'}></Image> */}
         ADD
       </button>
       <div className={styles.itemContainer}>
@@ -151,15 +150,6 @@ export const getServerSideProps =
       return {
         props: list,
       };
-      // } else {
-      //   // console.log('index else ');
-      //   return {
-      //     redirect: {
-      //       permanent: false,
-      //       destination: '/login',
-      //     },
-      //   };
-      // }
     } catch (err) {
       // console.log('--- index ---');
       console.log(err);

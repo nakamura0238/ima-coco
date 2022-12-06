@@ -33,6 +33,7 @@ type itemData = {
   id: number,
   state: string,
   common: boolean,
+  busy: 0| 1,
 }
 
 export const UpdateStateModal: React.FC<props> =
@@ -73,7 +74,6 @@ export const UpdateStateModal: React.FC<props> =
       const result =
         await axios.put('http://localhost/api/state/', reqObject, headers);
       // console.log('insertState : ', result);
-
 
       // state情報取得
       const check = await axios.get('http://localhost/api/state/', headers);
@@ -142,12 +142,17 @@ export const UpdateStateModal: React.FC<props> =
             <p>{errors.state?.message}</p>
             <button type="submit">更新</button>
           </form>
-          {selectDelete ?
-          <div>
-            <button onClick={cancelDeleteFunc}>キャンセル</button>
-            <button onClick={deleteFunc}>削除</button>
-          </div> :
-          <button onClick={selectDeleteFunc}>削除</button>
+          {itemData.busy == 0?
+              (selectDelete ?
+              <div>
+                <button onClick={cancelDeleteFunc}>キャンセル</button>
+                <button onClick={deleteFunc}>削除</button>
+              </div> :
+              <button onClick={selectDeleteFunc}>削除</button> ):
+            <div>
+              <button disabled>削除</button>
+              <p>現在使用中です</p>
+            </div>
           }
           <button onClick={closeAction}>閉じる</button>
         </div>
