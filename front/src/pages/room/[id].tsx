@@ -1,6 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {NextPageContext} from 'next';
 import {Layout} from '../../components/Layout';
+import RoomHeader from '../../components/RoomHeader';
 import Footer from '../../components/Footer';
 import axios from 'axios';
 import {useSetRecoilState} from 'recoil';
@@ -14,8 +15,8 @@ import styles from '../../styles/inRoom.module.scss';
 import ShowStateList from '../../components/room/ShowStateList';
 import ShowStateButton from '../../components/room/ShowStateButton';
 
-import QRCode from 'qrcode.react';
-import {useRouter} from 'next/router';
+// import QRCode from 'qrcode.react';
+// import {useRouter} from 'next/router';
 
 type roomInfo = {
   id: number;
@@ -45,6 +46,11 @@ type inRoomInfo = {
   userData: userData;
 };
 
+type propsObj = {
+  roomName: string,
+  roomUnique: string,
+}
+
 const Room = (props: inRoomInfo) => {
   console.log('run Room');
   const roomInfo = props.roomInfo;
@@ -56,7 +62,10 @@ const Room = (props: inRoomInfo) => {
 
   console.log('roomInfo', roomInfo);
 
-  const route = useRouter();
+  const headerProps: propsObj = {
+    roomName: roomInfo.roomName,
+    roomUnique: roomUnique,
+  };
 
   // 現在のページ取得
   const setVisitPage = useSetRecoilState(visitPageState);
@@ -66,32 +75,11 @@ const Room = (props: inRoomInfo) => {
     setVisitPage(3);
   }, []);
 
-
-  // ルームから退出
-  const leaveRoom = async () => {
-    console.log('ルームから退出します');
-
-    try {
-    // cookieの取得
-      const headers = returnHeader();
-      // ルームの情報を取得
-      await axios.delete(
-          `http://localhost/api/room/leave/${roomUnique}`,
-          headers,
-      );
-      route.replace('/room');
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   return (
     <Layout>
+      <RoomHeader obj={headerProps}/>
       <p>ルームID：{id}</p>
-      <button onClick={leaveRoom}>退出</button>
-      <h1 className={styles.roomName}>-- {roomInfo.roomName} --</h1>
       <ShowStateList stateListData={states} />
-      <GenerateJoinUrl roomId={roomUnique}/>
       <ShowStateButton
         userStates={userStates}
         roomUnique={roomUnique} />
@@ -101,27 +89,6 @@ const Room = (props: inRoomInfo) => {
 };
 
 export default Room;
-
-type joinUrlProps= {
-  roomId: string
-}
-const GenerateJoinUrl: React.FC<joinUrlProps> = ({roomId}) => {
-  const [url, setUrl] = useState('');
-
-  const generateUrl = () => {
-    setUrl(`localhost/room/join/${roomId}`);
-  };
-  return (
-    <>
-      <p>{url}</p>
-      {url?
-        <QRCode
-          value={url} /> :
-        undefined}
-      <button onClick={generateUrl}>参加URL表示</button>
-    </>
-  );
-};
 
 export const getServerSideProps = async (context: NextPageContext) => {
   try {
