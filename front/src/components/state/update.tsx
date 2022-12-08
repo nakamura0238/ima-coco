@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import type {NextPageContext} from 'next';
 import {parseCookies} from 'nookies';
 import axios from 'axios';
@@ -9,9 +9,11 @@ import * as yup from 'yup';
 // import {useSetRecoilState} from 'recoil';
 
 import styles from '../../styles/AddModal.module.scss';
-import {useRecoilValue, useSetRecoilState} from 'recoil';
+import {useSetRecoilState} from 'recoil';
 import {stateListState} from '../../states/stateList';
 // import {stateListState} from '../../states/stateList';
+
+import {ModalContext} from '../../pages/state';
 
 type insertState = {
   state: string;
@@ -25,7 +27,6 @@ const validate = yup.object({
 });
 
 type props = {
-  closeAction: () => void
   itemData: itemData,
 }
 
@@ -37,12 +38,11 @@ type itemData = {
 }
 
 export const UpdateStateModal: React.FC<props> =
-  ({closeAction, itemData}) => {
+  ({itemData}) => {
+    const {setModal} = useContext(ModalContext);
+
     const [selectDelete, setSelectDelete] = useState(false);
-    // const setPatienceList = useSetRecoilState(stateListState);
-    // 欲しいものリストの更新
     const setStateList = useSetRecoilState(stateListState);
-    // const stateList = useRecoilValue(stateListState);
 
     // フォーム設定
     const {
@@ -70,10 +70,7 @@ export const UpdateStateModal: React.FC<props> =
           Authorization: token.testAuthToken,
         },
       };
-
-      const result =
-        await axios.put('http://localhost/api/state/', reqObject, headers);
-      // console.log('insertState : ', result);
+      await axios.put('http://localhost/api/state/', reqObject, headers);
 
       // state情報取得
       const check = await axios.get('http://localhost/api/state/', headers);
@@ -82,8 +79,6 @@ export const UpdateStateModal: React.FC<props> =
 
       setStateList(checkResult.data.stateData);
 
-      // const resultData = result.data;
-      // setPatienceList(resultData.patiences);
       reset();
       closeAction();
     };
@@ -113,7 +108,6 @@ export const UpdateStateModal: React.FC<props> =
 
       const result =
         await axios.delete(generateApiLink(`/api/state/${itemId}`), headers);
-      // console.log('deleteFunc : ', result);
 
       // state情報取得
       const check = await axios.get('http://localhost/api/state/', headers);
@@ -122,15 +116,13 @@ export const UpdateStateModal: React.FC<props> =
 
       setStateList(checkResult.data.stateData);
 
-      // const resultData = result.data;
-      // setPatienceList(resultData.patiences);
       reset();
-      closeAction();
+      setModal(undefined);
     };
 
 
     return (
-      <div className={styles.addWanted} onClick={closeAction}>
+      <div className={styles.addWanted} onClick={() => setModal(undefined)}>
         <div className={styles.addWantedInner}
           onClick={(e) => e.stopPropagation()}>
           <p>id: {itemData.id}</p>
@@ -154,7 +146,7 @@ export const UpdateStateModal: React.FC<props> =
               <p>現在使用中です</p>
             </div>
           }
-          <button onClick={closeAction}>閉じる</button>
+          <button onClick={() => setModal(undefined)}>閉じる</button>
         </div>
       </div>
     );

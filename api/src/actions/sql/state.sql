@@ -92,7 +92,9 @@ CREATE PROCEDURE getUpdatedState(IN input_roomId int(11), IN input_userId int(11
 
     UPDATE state_data
     SET state_data.busy = 1
-    WHERE state_data.id = input_stateDataId;
+    WHERE
+      state_data.id = input_stateDataId
+      AND state_data.delete_flg = FALSE;
     
     # 使用状態の確認
     SELECT
@@ -100,7 +102,9 @@ CREATE PROCEDURE getUpdatedState(IN input_roomId int(11), IN input_userId int(11
     INTO
       busyCount
     FROM states
-    WHERE states.stateDataId = beforeStateId;
+    WHERE
+      states.stateDataId = beforeStateId
+      AND states.delete_flg = FALSE;
 
     IF busyCount = 0 THEN
       UPDATE state_data

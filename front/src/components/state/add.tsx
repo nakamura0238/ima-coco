@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import type {NextPageContext} from 'next';
 import {parseCookies} from 'nookies';
 import axios from 'axios';
@@ -11,6 +11,7 @@ import * as yup from 'yup';
 import styles from '../../styles/AddModal.module.scss';
 import {useSetRecoilState} from 'recoil';
 import {stateListState} from '../../states/stateList';
+import {ModalContext} from '../../pages/state';
 // import {stateListState} from '../../states/stateList';
 
 type insertState = {
@@ -24,12 +25,9 @@ const validate = yup.object({
       .required('必須です'),
 });
 
-type props = {
-  closeAction: () => void
-}
 
-export const AddStateModal: React.FC<props> = ({closeAction}) => {
-  // const setPatienceList = useSetRecoilState(stateListState);
+export const AddStateModal: React.FC = () => {
+  const {setModal} = useContext(ModalContext);
 
   const setStateList = useSetRecoilState(stateListState);
 
@@ -84,7 +82,7 @@ export const AddStateModal: React.FC<props> = ({closeAction}) => {
 
 
   return (
-    <div className={styles.addWanted} onClick={closeAction}>
+    <div className={styles.addWanted} onClick={() => setModal(undefined)}>
       <div className={styles.addWantedInner}
         onClick={(e) => e.stopPropagation()}>
         <form onSubmit={handleSubmit(insertState)}>
@@ -94,7 +92,7 @@ export const AddStateModal: React.FC<props> = ({closeAction}) => {
           <p>{errors.state?.message}</p>
           <button type="submit">登録</button>
         </form>
-        <button onClick={closeAction}>閉じる</button>
+        <button onClick={() => setModal(undefined)}>閉じる</button>
       </div>
     </div>
   );

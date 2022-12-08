@@ -191,7 +191,22 @@ DELIMITER //
 CREATE PROCEDURE leaveRoom(IN input_roomId varchar(191), IN input_userId int(11))
   BEGIN
     DECLARE leaveRoomId int(11);
+    DECLARE stateId int(11);
+    DECLARE busyCount int(11);
 
+    # 現在のstateのid
+    SELECT states.stateDataId
+    INTO stateId
+    FROM states
+    INNER JOIN room_user
+      ON states.roomUserId = room_user.id
+    INNER JOIN rooms
+      ON room_user.roomId = rooms.id
+    WHERE
+      rooms.roomId = input_roomId
+      AND room_user.userId = input_userId;
+
+    # Leave Room
     UPDATE rooms
     INNER JOIN room_user
     ON rooms.id = room_user.roomId
@@ -203,6 +218,22 @@ CREATE PROCEDURE leaveRoom(IN input_roomId varchar(191), IN input_userId int(11)
     WHERE
       rooms.roomId = input_roomId
       AND room_user.userId = input_userId;
+
+    # 使用状態の確認
+    SELECT
+      COUNT(*)
+    INTO
+      busyCount
+    FROM states
+    WHERE
+      states.stateDataId = stateId
+      AND states.delete_flg = FALSE;
+
+    IF busyCount = 0 THEN
+      UPDATE state_data
+      SET state_data.busy = 0
+      WHERE state_data.id = stateId;
+    END IF;
 
   END//
 DELIMITER ;

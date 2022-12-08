@@ -1,5 +1,5 @@
 import type {NextPageContext} from 'next';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, createContext, useContext} from 'react';
 // import {checkLogIn} from '../actions/LogIn';
 import React from 'react';
 import {useRouter} from 'next/router';
@@ -17,27 +17,24 @@ import {visitPageState} from '../../states/visitPage';
 
 import styles from '../../styles/State.module.scss';
 
+export const ModalContext = createContext({} as {
+  modal: React.ReactNode
+  setModal: React.Dispatch<React.SetStateAction<React.ReactNode>>
+});
 
 const StateList = (props: any) => {
   // モーダル表示
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [updateData, setUpdateData] = useState<any>({});
+  const [modal, setModal] = useState<React.ReactNode>(undefined);
   const route = useRouter();
-
-  // 欲しいものリストの更新
-  const setStateList = useSetRecoilState(stateListState);
-  const stateList = useRecoilValue(stateListState);
 
   // 現在のページ取得
   const setVisitPage = useSetRecoilState(visitPageState);
 
   useEffect(() => {
-    setStateList(props.stateData);
     setVisitPage(2);
   }, []);
 
-  // console.log(props);
+  console.log(props);
 
 
   // ログアウト処理
@@ -46,74 +43,82 @@ const StateList = (props: any) => {
     route.push('/login');
   };
 
-  // 登録モーダル
-  const openAddModal = (): void => {
-    setShowUpdateModal(false);
-    setShowAddModal(true);
-  };
-  const closeAddModal = (): void => setShowAddModal(false);
-
-  // 更新モーダル
-  const openUpdateModal = (itemData: any): void => {
-    setUpdateData(itemData);
-    setShowAddModal(false);
-    setShowUpdateModal(true);
-  };
-  const closeUpdateModal = (): void => setShowUpdateModal(false);
-
 
   return (
-    <Layout>
-      <button onClick={logout}
-        tabIndex={showAddModal ? -1: undefined}>ログアウト</button>
-      <button
-        onClick={openAddModal}
-        tabIndex={showAddModal ? -1: undefined}
-        className={`${styles.addButton} ${styles.addPosition}`}>
-        ADD
-      </button>
-      <div className={styles.itemContainer}>
-        {stateList.map((val: any, i: number) => {
-          if (val.common) {
-            return (
-              <div
-                key={i}
-                className={`${styles.item} ${styles.common}`}>
-                <span>{val.state}</span>
-                <span>Default</span>
-              </div>
-            );
-          } else {
-            return (
-              <button
-                key={i}
-                onClick={() => openUpdateModal(val)}
-                className={styles.item}>
-                {val.state}
-              </button>
-            );
-          }
-        })}
-      </div>
+    <ModalContext.Provider value={{modal, setModal}}>
+      <Layout>
 
-      {
-        showAddModal ?
-          <AddStateModal closeAction={closeAddModal} /> :
-        undefined
-      }
-      {
-        showUpdateModal?
-        <UpdateStateModal
-          closeAction={closeUpdateModal}
-          itemData={updateData} /> :
-        undefined
-      }
-      <Footer login={true}></Footer>
-    </Layout>
+        <UpdateStateModalContainer stateData={props.stateData}/>
+        <AddStateModalContainer/>
+
+        <Footer login={true}></Footer>
+        {modal}
+      </Layout>
+    </ModalContext.Provider>
   );
 };
 
 export default StateList;
+
+type updateStateProps = {
+  stateData: any
+}
+const UpdateStateModalContainer: React.FC<updateStateProps> = ({stateData}) => {
+  const {setModal} = useContext(ModalContext);
+
+  const setStateList = useSetRecoilState(stateListState);
+  const stateList = useRecoilValue(stateListState);
+
+  useEffect(() => {
+    setStateList(stateData);
+  }, []);
+
+  // 登録モーダル
+  const openUpdateModal = (val:any) => {
+    setModal(<UpdateStateModal itemData={val} />);
+  };
+
+  return (
+    <>
+      <div className={styles.itemContainer}>
+        {stateList.map((val: any, i: number) => {
+          return (
+            <button
+              key={i}
+              onClick={() => openUpdateModal(val)}
+              className={styles.item}>
+              {val.state}
+              {val.busy == 1 ?
+                <span>使用中</span>:
+                undefined}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+};
+
+
+const AddStateModalContainer: React.FC = () => {
+  const {setModal} = useContext(ModalContext);
+
+  // 登録モーダル
+  const openAddModal = () => {
+    setModal(<AddStateModal />);
+  };
+
+  return (
+    <>
+      <button
+        onClick={openAddModal}
+        className={`${styles.addButton} ${styles.addPosition}`}>
+      ADD
+      </button>
+    </>
+  );
+};
+
 
 type checkResult = {
   check: boolean,
@@ -138,12 +143,11 @@ export const getServerSideProps =
       // console.log(headers);
 
       // state情報取得
-      const check: checkResult = await axios.get('http://ima-coco_nginx:80/api/state/', headers);
-      const checkResult = check.data;
+      const check = await axios.get('http://ima-coco_nginx:80/api/state/', headers);
+      const checkResult: checkResult = check.data;
       // console.log(checkResult.data);
 
       console.log('check', check);
-
 
       // if (checkResult?.check) {
       const list = checkResult.data;
