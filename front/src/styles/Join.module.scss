@@ -1,0 +1,57 @@
+.joinContainer {
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  margin: 0 auto;
+}
+
+.pageTitle {
+  text-align: center;
+  font-size: 1.5rem;
+  padding: 1rem;
+}
+
+.joinBtn {
+  text-align: center;
+  button {
+    padding: 10px 20px;
+    border-radius: 5px;
+    color: #ffffff;
+    background-color: #2196F3;
+    transition: 0.1s;
+    &:hover{
+      background-color: #1976D2;
+    }
+  }
+}
+
+.label {
+  font-size: 1.1rem;
+  color :#666666;
+}
+
+.joinRoomName {
+  padding: 5px 10px;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  font-size: 2rem;
+  border-bottom: 3px solid #666666;
+}
+
+.message {
+  font-size: 1.2rem;
+  text-align: center;
+  color: #f44336;
+}
+
+.moveRoom {
+  margin-top: 1rem;
+  text-align: center;
+  a {
+    display: inline-block;
+    color: #1a0dab;
+    text-decoration: underline;
+    line-height: 1.2rem;
+    margin: 3px;
+  }
+}

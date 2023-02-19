@@ -3,10 +3,11 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  position: fixed;
+  position: sticky;
   bottom: 0;
   width: 100%;
   max-width: 640px;
+  margin-top: auto;
 }
 
 .nav {
@@ -16,8 +17,10 @@
   justify-content: space-evenly;
   width: 100%;
   padding: 10px;
+  background-color: #82B1FF; 
+  box-shadow: 0 0 5px gray;
   /* background-color: #aaaaaa; */
-  background-color: rgba(0, 0, 0, 0.3);
+  // background-color: rgba(0, 0, 0, 0.3);
 }
 
 .navButton {
@@ -36,11 +39,11 @@
 }
 
 .navLogin {
-  /* width: calc(100% / 4); */
-  width: 3rem;
+  width: 25%;
+  // width: 3rem;
 }
 
 .navLogout {
-  /* width: calc(100% / 3); */
-  width: 3rem;
+  width: 25%;
+  // width: 3rem;
 }

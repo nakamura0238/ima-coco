@@ -8,7 +8,7 @@ import {parseCookies} from 'nookies';
  * @param {NextPageContext} context
  * @return {AxiosRequestConfig} headers
  */
-export const returnHeader = (context?: NextPageContext) => {
+export const returnHeader = (context?: NextPageContext): AxiosRequestConfig => {
   const cookie = parseCookies(context);
   const headers: AxiosRequestConfig = {
     headers: {

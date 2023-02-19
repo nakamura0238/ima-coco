@@ -1,6 +1,7 @@
 import {NextPageContext} from 'next';
 import {parseCookies} from 'nookies';
 import axios from 'axios';
+import {generateServerApiLink} from './generateApiLink';
 
 const getCookie = (ctx?: NextPageContext) => {
   const cookie = parseCookies(ctx);
@@ -25,7 +26,11 @@ export const checkLogIn = async (context: NextPageContext) => {
       },
     };
 
-    const check:Response = await axios.post('http://ima-coco_nginx:80/api/user/check', data, headers);
+    const check:Response =
+      await axios.post(
+          generateServerApiLink('/user/check'),
+          data,
+          headers);
     const checkResult = check.data.check;
 
     if (checkResult) {
@@ -41,7 +46,6 @@ export const checkLogIn = async (context: NextPageContext) => {
       };
     }
   } catch (err) {
-    console.log('--- checklogin ---');
     console.log(err);
   }
 };

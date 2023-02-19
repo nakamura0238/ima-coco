@@ -1,11 +1,8 @@
 import {NextPageContext} from 'next';
-import {parseCookies} from 'nookies';
 import axios from 'axios';
+import {returnHeader} from './Cookie';
+import {generateServerApiLink} from './generateApiLink';
 
-const getCookie = (ctx?: NextPageContext) => {
-  const cookie = parseCookies(ctx);
-  return cookie;
-};
 
 type Response = {
   check: boolean
@@ -16,16 +13,15 @@ type Response = {
 export const checkLoggedIn = async (context: NextPageContext) => {
   try {
     // cookieの取得
-    const myCookie = getCookie(context);
+    const headers = returnHeader(context);
 
     const data = {};
-    const headers = {
-      headers: {
-        Authorization: myCookie.testAuthToken,
-      },
-    };
 
-    const check:Response = await axios.post('http://nginx:80/api/user/loggedin', data, headers);
+    const check:Response =
+      await axios.post(
+          generateServerApiLink('/user/loggedin'),
+          data,
+          headers);
     const checkResult = check.data.check;
 
     if (checkResult) {

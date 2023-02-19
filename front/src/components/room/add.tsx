@@ -1,6 +1,4 @@
 import React from 'react';
-import type {NextPageContext} from 'next';
-import {parseCookies} from 'nookies';
 import axios from 'axios';
 import {generateApiLink} from '../../actions/generateApiLink';
 import {useForm, SubmitHandler} from 'react-hook-form';
@@ -9,10 +7,12 @@ import * as yup from 'yup';
 
 import * as uuid from 'uuid';
 
-import styles from '../../styles/AddModal.module.scss';
+import modalStyle from '../../styles/Modal.module.scss';
 import {useRouter} from 'next/router';
+import Image from 'next/image';
+import {returnHeader} from '../../actions/Cookie';
 
-type insertRomm = {
+type insertRoom = {
   roomName: string;
 };
 
@@ -20,7 +20,8 @@ type insertRomm = {
 const validate = yup.object({
   roomName: yup
       .string()
-      .required('必須です'),
+      .required('必須です')
+      .max(20, '20文字以内で入力してください'),
 });
 
 type props = {
@@ -36,7 +37,7 @@ export const AddRoomModal: React.FC<props> = ({closeAction}) => {
     handleSubmit,
     reset,
     formState: {errors},
-  } = useForm<insertRomm>({
+  } = useForm<insertRoom>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
     criteriaMode: 'all',
@@ -45,21 +46,18 @@ export const AddRoomModal: React.FC<props> = ({closeAction}) => {
   });
 
   // 送信アクション
-  const insertRoom: SubmitHandler<insertRomm> = async (data) => {
+  const insertRoom: SubmitHandler<insertRoom> = async (data) => {
     try {
-      const token = getCookie();
+      // cookieの取得
+      const headers = returnHeader();
+
       const reqObject = {
         roomName: data.roomName,
         roomId: uuid.v4(),
       };
-      const headers = {
-        headers: {
-          Authorization: token.testAuthToken,
-        },
-      };
 
       const result =
-        await axios.post(generateApiLink('/api/room'), reqObject, headers);
+        await axios.post(generateApiLink('/room'), reqObject, headers);
 
       closeAction();
       reset();
@@ -69,25 +67,26 @@ export const AddRoomModal: React.FC<props> = ({closeAction}) => {
     }
   };
 
-  // Cookie取得
-  const getCookie = (ctx?: NextPageContext) => {
-    const cookie = parseCookies(ctx);
-    return cookie;
-  };
-
 
   return (
-    <div className={styles.addWanted} onClick={closeAction}>
-      <div className={styles.addWantedInner}
+    <div className={modalStyle.modalOverlay} onClick={closeAction}>
+      <div className={modalStyle.modalInner}
         onClick={(e) => e.stopPropagation()}>
-        <form onSubmit={handleSubmit(insertRoom)}>
+        <p className={modalStyle.modalHeadLine}>ルーム作成</p>
+        <form
+          className={modalStyle.modalForm}
+          onSubmit={handleSubmit(insertRoom)}>
           <input type="text"
             autoComplete="off"
+            placeholder='ルーム名'
             {...register('roomName')}/>
           <p>{errors.roomName?.message}</p>
-          <button type="submit">登録</button>
+          <button
+            className={modalStyle.modalCloseBtn}
+            type='button' onClick={closeAction}>
+            <Image src={'/icon/cross.svg'} width={16} height={16}/></button>
+          <button className={modalStyle.updateBtn} type="submit">登録</button>
         </form>
-        <button onClick={closeAction}>閉じる</button>
       </div>
     </div>
   );

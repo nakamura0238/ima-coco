@@ -1,19 +1,18 @@
-import React, {useContext, useState} from 'react';
-import type {NextPageContext} from 'next';
-import {parseCookies} from 'nookies';
+import React, {useContext, useEffect, useState} from 'react';
 import axios from 'axios';
 import {generateApiLink} from '../../actions/generateApiLink';
 import {useForm, SubmitHandler} from 'react-hook-form';
 import {yupResolver} from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-// import {useSetRecoilState} from 'recoil';
 
-import styles from '../../styles/AddModal.module.scss';
+import modalStyle from '../../styles/Modal.module.scss';
 import {useSetRecoilState} from 'recoil';
 import {stateListState} from '../../states/stateList';
-// import {stateListState} from '../../states/stateList';
 
-import {ModalContext} from '../../pages/state';
+import {ModalContext} from '../../contexts/ModalContext';
+import {returnHeader} from '../../actions/Cookie';
+import Link from 'next/link';
+import Image from 'next/image';
 
 type insertState = {
   state: string;
@@ -37,12 +36,31 @@ type itemData = {
   busy: 0| 1,
 }
 
+type deleteId = {
+  id: number,
+  state: string
+}
+
+
 export const UpdateStateModal: React.FC<props> =
   ({itemData}) => {
     const {setModal} = useContext(ModalContext);
 
-    const [selectDelete, setSelectDelete] = useState(false);
     const setStateList = useSetRecoilState(stateListState);
+
+    const [rooms, setRooms] = useState([]);
+
+    useEffect(() => {
+      (async () =>{
+        // cookieの取得
+        const headers = returnHeader();
+        const res: any =
+          await axios.get(
+              generateApiLink(`/state/${itemData.id}`),
+              headers);
+        setRooms(res.data.stateData);
+      })();
+    }, []);
 
     // フォーム設定
     const {
@@ -60,59 +78,18 @@ export const UpdateStateModal: React.FC<props> =
 
     // 送信アクション
     const updateState: SubmitHandler<insertState> = async (data) => {
-      const token = getCookie();
       const reqObject = {
         id: itemData.id,
         state: data.state,
       };
-      const headers = {
-        headers: {
-          Authorization: token.testAuthToken,
-        },
-      };
-      await axios.put('http://localhost/api/state/', reqObject, headers);
+      const headers = returnHeader();
+
+      await axios.put(generateApiLink('/state/'), reqObject, headers);
 
       // state情報取得
-      const check = await axios.get('http://localhost/api/state/', headers);
+      const check = await axios.get(generateApiLink('/state/'), headers);
       const checkResult = check.data;
-      console.log('updateState : ', checkResult.data);
-
-      setStateList(checkResult.data.stateData);
-
-      reset();
-      closeAction();
-    };
-
-    // Cookie取得
-    const getCookie = (ctx?: NextPageContext) => {
-      const cookie = parseCookies(ctx);
-      return cookie;
-    };
-
-    const selectDeleteFunc = () => {
-      setSelectDelete(true);
-    };
-
-    const cancelDeleteFunc = () => {
-      setSelectDelete(false);
-    };
-
-    const deleteFunc = async () => {
-      const token = getCookie();
-      const itemId = itemData.id;
-      const headers = {
-        headers: {
-          Authorization: token.testAuthToken,
-        },
-      };
-
-      const result =
-        await axios.delete(generateApiLink(`/api/state/${itemId}`), headers);
-
-      // state情報取得
-      const check = await axios.get('http://localhost/api/state/', headers);
-      const checkResult = check.data;
-      console.log('deleteFunc : ', checkResult);
+      // console.log('updateState : ', checkResult.data);
 
       setStateList(checkResult.data.stateData);
 
@@ -120,34 +97,95 @@ export const UpdateStateModal: React.FC<props> =
       setModal(undefined);
     };
 
+    const selectDeleteFunc = () => {
+      reset();
+      setModal(<DeleteStateModal id={itemData.id} state={itemData.state} />);
+    };
+
 
     return (
-      <div className={styles.addWanted} onClick={() => setModal(undefined)}>
-        <div className={styles.addWantedInner}
+      <div
+        className={modalStyle.modalOverlay}
+        onClick={() => setModal(undefined)}>
+        <div
+          className={modalStyle.modalInner}
           onClick={(e) => e.stopPropagation()}>
-          <p>id: {itemData.id}</p>
-          <form onSubmit={handleSubmit(updateState)}>
+          <p className={modalStyle.modalHeadLine}>stateの更新</p>
+          <form className={modalStyle.modalForm}
+            onSubmit={handleSubmit(updateState)}>
             <input type="text"
               autoComplete="off"
               defaultValue={itemData.state}
               {...register('state')}/>
             <p>{errors.state?.message}</p>
-            <button type="submit">更新</button>
+            <button className={modalStyle.updateBtn} type="submit">更新</button>
           </form>
           {itemData.busy == 0?
-              (selectDelete ?
-              <div>
-                <button onClick={cancelDeleteFunc}>キャンセル</button>
-                <button onClick={deleteFunc}>削除</button>
-              </div> :
-              <button onClick={selectDeleteFunc}>削除</button> ):
-            <div>
-              <button disabled>削除</button>
-              <p>現在使用中です</p>
+            <button
+              className={modalStyle.deleteText}
+              onClick={selectDeleteFunc}>削除</button>:
+            <div className={modalStyle.stateUseRoomContainer}>
+              <p>使用中のルーム</p>
+              <div className={modalStyle.stateUseRoomList}>
+                {rooms.map((val: any, i: number) => {
+                  return (
+                    <Link
+                      href={`/room/${val.id}`}
+                      key={i}><a>{val.roomName}</a></Link>
+                  );
+                })}
+              </div>
             </div>
           }
-          <button onClick={() => setModal(undefined)}>閉じる</button>
+          <button
+            className={modalStyle.modalCloseBtn}
+            onClick={() => setModal(undefined)}>
+            <Image src={'/icon/cross.svg'} width={16} height={16}/>
+          </button>
         </div>
       </div>
     );
   };
+
+
+export const DeleteStateModal: React.FC<deleteId> =
+({id, state}) => {
+  const {setModal} = useContext(ModalContext);
+  const setStateList = useSetRecoilState(stateListState);
+
+  const deleteFunc = async () => {
+    const headers = returnHeader();
+    await axios.delete(generateApiLink(`/state/${id}`), headers);
+
+    // state情報取得
+    const check = await axios.get(generateApiLink('/state'), headers);
+    const checkResult = check.data;
+    setStateList(checkResult.data.stateData);
+
+    setModal(undefined);
+  };
+
+  return (
+    <div
+      className={modalStyle.modalOverlay}
+      onClick={() => setModal(undefined)}>
+      <div
+        className={modalStyle.modalInner}
+        onClick={(e) => e.stopPropagation()}>
+        <p className={modalStyle.modalHeadLine}>stateを削除します</p>
+        <p className={modalStyle.modalStateLabel}>{state}</p>
+        <div className={modalStyle.stateDeleteBtnBox}>
+          <button
+            className={modalStyle.cancelBtn}
+            onClick={() => setModal(undefined)}>キャンセル</button>
+          <button
+            className={modalStyle.deleteBtn}
+            onClick={deleteFunc}>削除</button>
+        </div>
+        <button
+          className={modalStyle.modalCloseBtn}
+          onClick={() => setModal(undefined)}>×</button>
+      </div>
+    </div>
+  );
+};

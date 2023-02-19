@@ -41,7 +41,7 @@ DROP PROCEDURE IF EXISTS signupUser;
 DELIMITER //
 CREATE PROCEDURE signupUser(IN input_uid varchar(191), IN input_password varchar(191))
   BEGIN
-    INSERT INTO users (uid, password) VALUES (input_uid, input_password);
+    INSERT INTO users (uid, password, image) VALUES (input_uid, input_password, "");
     INSERT INTO state_data (state, userId) VALUES ("空き", LAST_INSERT_ID());
   END//
 DELIMITER ;
@@ -61,5 +61,18 @@ CREATE PROCEDURE getUserData(IN input_userId int(11), IN input_userUId varchar(1
     WHERE
       users.id = input_userId
       AND users.uid = input_userUId;
+  END//
+DELIMITER ;
+
+# ユーザー登録
+DROP PROCEDURE IF EXISTS updateDisplayName;
+DELIMITER //
+CREATE PROCEDURE updateDisplayName(IN input_userId int(11), IN input_displayName varchar(191))
+  BEGIN
+    UPDATE users
+    SET
+      users.displayName = input_displayName
+    WHERE 
+      users.id = input_userId;
   END//
 DELIMITER ;

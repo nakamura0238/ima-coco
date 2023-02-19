@@ -1,13 +1,13 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useRouter} from 'next/router';
 import Link from 'next/link';
-import {useEffect} from 'react';
 import {useRecoilValue} from 'recoil';
-import {signupUserState} from '../states/signupUser';
 import axios from 'axios';
 import {createHash} from 'crypto';
+import {signupUserState} from '../states/signupUser';
 import {generateApiLink} from '../actions/generateApiLink';
 import {Layout} from '../components/Layout';
+import styles from '../styles/Check.module.scss';
 
 const Check = () => {
   const route = useRouter();
@@ -32,7 +32,7 @@ const Check = () => {
       };
 
       const res =
-        await axios.post(generateApiLink('/api/user/signup'), userData);
+        await axios.post(generateApiLink('/user/signup'), userData);
       console.log(res);
       route.replace('/login');
     }
@@ -43,18 +43,35 @@ const Check = () => {
       {
         signupUser?
           <>
-            <p>情報確認ページ</p>
-            <p>{signupUser.uid}</p>
-            <p>{signupUser.password}</p>
-            <p>スクリーンショットなどでパスワードをお控えください</p>
-            <Link href="/signup">
-              戻る
-            </Link>
-            <button onClick={submitUserData}>登録</button>
+            <p className={styles.headLine}>登録情報確認</p>
+            <div className={styles.userInfoBox}>
+              <div>
+                <p className={styles.userInfoHeadLine}>ユーザーID</p>
+                <p className={styles.userInfoValue}>{signupUser.uid}</p>
+              </div>
+              <div>
+                <p className={styles.userInfoHeadLine}>パスワード</p>
+                <p className={styles.userInfoValue}>{signupUser.password}</p>
+              </div>
+            </div>
+            <p className={styles.description}>
+              スクリーンショットなどでパスワードをお控えください</p>
+            <div className={styles.btnBox}>
+              <Link href="/signup">
+                <a className={styles.cancelBtn}>
+                戻る
+                </a>
+              </Link>
+              <button
+                className={styles.registerBtn}
+                onClick={submitUserData}>
+                  登録
+              </button>
+
+            </div>
           </> :
         undefined
       }
-
     </Layout>
   );
 };

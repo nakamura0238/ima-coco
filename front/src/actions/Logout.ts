@@ -1,11 +1,10 @@
-import {NextRouter} from 'next/router';
+import Router from 'next/router';
 import {destroyCookie} from 'nookies';
 
 /**
  * ログアウト処理
- * @param {NextRouter} route
  */
-export const logout = (route: NextRouter) => {
+export const logout = () => {
   destroyCookie(undefined, 'testAuthToken');
-  route.push('/login');
+  Router.push('/login');
 };

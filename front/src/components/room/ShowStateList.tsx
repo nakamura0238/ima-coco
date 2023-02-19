@@ -1,7 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {socket} from '../../lib/socket';
 
 import styles from '../../styles/inRoom.module.scss';
+import {UserContext} from '../../contexts/UserContext';
 
 
 type state = {
@@ -17,10 +18,36 @@ type props = {
 
 // stateリスト
 const ShowStateList: React.FC<props> = ({stateListData}) => {
-  console.log('run showStateList');
   const [stateList, setStateList] = useState(stateListData);
+  const {user} = useContext(UserContext);
+
+  console.log(user);
+  if (user) {
+    const UID = user.uid;
+    // 並び替え処理
+    const list = [...stateList];
+    const myId = list.findIndex((element) =>
+      element.uid === UID);
+    const myState = list[myId];
+    list.splice(myId, 1);
+    list.unshift(myState);
+    console.log(list);
+  // 並び替え処理ここまで
+  }
+
   useEffect(() => {
-    socket.on('updateStateResponse', (data) => {
+    socket.on('updateStateResponse', (data: state[]) => {
+      if (user) {
+        const UID = user.uid;
+        // 並び替え処理
+        const myId = data.findIndex((element) =>
+          element.uid === UID);
+        const myState = data[myId];
+        data.splice(myId, 1);
+        data.unshift(myState);
+        console.log(data);
+        // 並び替え処理ここまで
+      }
       setStateList(data);
     });
   }, []);
@@ -30,9 +57,10 @@ const ShowStateList: React.FC<props> = ({stateListData}) => {
       {stateList.map((val: any, i: number) => {
         return (
           <div className={styles.stateItem} key={i}>
-            <p>username: {val.uid}</p>
-            <p>{val.state}</p>
-            <p>{val.comment}</p>
+            <p className={styles.name}>
+              {val.displayName? val.displayName:val.uid}</p>
+            <p className={styles.state}>{val.state}</p>
+            <p className={styles.comment}>{val.comment}</p>
           </div>
         );
       })}

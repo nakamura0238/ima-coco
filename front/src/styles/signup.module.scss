@@ -10,3 +10,47 @@
   align-items: center;
   margin-left: 10px;
 }
+
+.pageTitle {
+  text-align: center;
+  font-size: 1.5rem;
+  padding: 1rem;
+}
+
+.form {
+  width: 80%;
+  margin: 0 auto;
+  input {
+    width: 100%;
+  }
+}
+
+.headline {
+  display: inline-block;
+  padding-bottom: 3px;
+  font-size: 1.2rem;
+  color: #666666;
+  line-height: 1.4rem;
+}
+
+.errorMessage {
+  height: 1.4rem;
+  color: #f44336;
+  line-height: 1.4rem;
+  margin-bottom: 10px;
+}
+
+
+.signupBtn {
+  text-align: center;
+  button {
+    padding: 10px 20px;
+    border-radius: 5px;
+    color: #ffffff;
+    background-color: #2196F3;
+    transition: 0.1s;
+    &:hover{
+      background-color: #1976D2;
+    }
+  }
+}

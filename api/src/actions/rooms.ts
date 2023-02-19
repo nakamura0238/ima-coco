@@ -1,7 +1,5 @@
 import express, {NextFunction, Request, Response} from 'express';
-// import {prisma} from '../config/db_connection';
 import {auth} from '../middlewares/auth';
-// import {SECRET_KEY} from '../config/keys';
 
 import * as mysql from 'mysql2/promise';
 import {db} from '../config/db_connection';
@@ -16,14 +14,12 @@ roomRouter.get(
     async (_req: Request, res: Response) => {
       try {
         const req = res.locals.userData;
-        // console.log(req);
 
         const sql = 'CALL getRoomList(?);';
         const params = [req.id];
         const [response] =
           await db.execute<mysql.RowDataPacket[][]>(sql, params);
 
-        // console.log('aaaaaaaaaaa', response[0]);
         return res.json({
           check: true,
           data: {
@@ -80,8 +76,6 @@ roomRouter.get(
             [roomId, userData.id],
         );
 
-        // console.log('checkRes: ', checkRes[0]);
-
         // 該当ユーザーなし
         if (checkRes[0].length == 0) {
           return res.json({
@@ -96,8 +90,8 @@ roomRouter.get(
               sql: 'CALL getRoomInfo(?)',
               params: [roomId]},
             {key: 'states',
-              sql: 'CALL getStateList(?);',
-              params: [roomId]},
+              sql: 'CALL getStateList(?, ?);',
+              params: [roomId, userData.id]},
             {key: 'userStates',
               sql: 'CALL getUserStateList(?)',
               params: [userData.id]},
@@ -116,7 +110,6 @@ roomRouter.get(
           }
           return obj;
         };
-
         const data = await getInRoomInfo();
         // console.log('*********************', {...data, userData: userData});
 
@@ -207,20 +200,10 @@ roomRouter.delete(
       try {
         const roomUnique = _req.params.roomId;
         const userData = res.locals.userData;
-        // console.log(userData.id);
 
-        // const getJoinRoomInfo = async () => {
         const sql = 'CALL leaveRoom(?, ?)';
         const params = [roomUnique, userData.id];
-        // const [response] =
         await db.execute<mysql.RowDataPacket[][]>(sql, params);
-
-        // return response[0][0];
-        // };
-
-        // const data = await getJoinRoomInfo();
-        // console.log('*********************', {...data});
-
 
         res.json({
           message: '正常に処理が完了しました',
@@ -233,15 +216,28 @@ roomRouter.delete(
 
 );
 
+// 表示用
+roomRouter.get(
+    '/display/:roomId',
+    async (_req: Request, res: Response, next: NextFunction) => {
+      try {
+        const roomUnique = _req.params.roomId;
+        console.log(roomUnique);
 
-// roomRouter.get('/aa/aa', async (_req: Request, res: Response) => {
-//   try {
-//     const sql = 'CALL test();';
-//     const [response] = await db.execute<mysql.RowDataPacket[][]>(sql);
+        const sql = 'CALL getDisplayStateList(?)';
+        const params = [roomUnique];
+        const [response] =
+          await db.execute<mysql.RowDataPacket[][]>(sql, params);
 
-//     console.log('aaaaaaaaaaa', response[0]);
-//     res.send(response[0]);
-//   } catch (err) {
-//     console.log(err);
-//   }
-// });
+        console.log(response);
+
+        return res.json({
+          data: {
+            rooms: response[0],
+          },
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    },
+);

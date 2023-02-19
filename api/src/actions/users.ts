@@ -21,7 +21,6 @@ userRouter.post('/loggedin', auth, async (_req: Request, res: Response) => {
 
 // ログインチェック
 userRouter.post('/check', auth, async (_req: Request, res: Response) => {
-  // console.log('check');
   try {
     return res.json({
       data: {
@@ -34,6 +33,29 @@ userRouter.post('/check', auth, async (_req: Request, res: Response) => {
   }
 });
 
+// 登録済チェック
+userRouter.post('/userCheck', async (_req: Request, res: Response) => {
+  try {
+    const req = _req.body;
+    console.log(req);
+
+    const [row] =
+        await db.execute<mysql.RowDataPacket[][]>(
+            'CALL registeredUser(?);',
+            [req.uid]);
+    const check = row[0][0];
+
+    // ユーザー未登録の確認
+    if (check) {
+      // ユーザー登録済の時の処理
+      return res.status(403).send({errorMessage: 'このIDはすでに登録されています'});
+    }
+    return res.send();
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 // サインアップ
 userRouter.post('/signup', async (_req: Request, res: Response) => {
   try {
@@ -43,7 +65,6 @@ userRouter.post('/signup', async (_req: Request, res: Response) => {
         await db.execute<mysql.RowDataPacket[][]>(
             'CALL registeredUser(?);',
             [req.uid]);
-    // console.log('registeredUser: ', row[0]);
     const check = row[0][0];
 
     // ユーザー未登録の確認
@@ -85,7 +106,6 @@ userRouter.post('/login', async (_req: Request, res: Response) => {
   await db.execute<mysql.RowDataPacket[][]>(
       'CALL registeredUser(?);',
       [req.uid]);
-  // console.log('registeredUser: ', row[0]);
   const check = row[0][0];
 
 
@@ -128,18 +148,35 @@ userRouter.post('/login', async (_req: Request, res: Response) => {
 
 // ユーザーページ
 userRouter.get('/info', auth, async (_req: Request, res: Response) => {
-  const req = _req.body;
   const userData = res.locals.userData;
 
-  // console.log(userData);
   const [response] =
     await db.execute<mysql.RowDataPacket[][]>(
         'CALL getUserData(?, ?);',
         [userData.id, userData.uid]);
-  // const userData = row[0][0];
-  // console.log(response[0]);
   const data = response[0][0];
   return res.json({
     ...data,
   });
 });
+
+
+// 表示名更新
+userRouter.post('/displayName', auth, async (_req: Request, res: Response) => {
+  const userData = res.locals.userData;
+  const req = _req.body;
+
+  await db.execute<mysql.RowDataPacket[][]>(
+      'CALL updateDisplayName(?, ?);',
+      [userData.id, req.displayName]);
+
+  const [response] =
+    await db.execute<mysql.RowDataPacket[][]>(
+        'CALL getUserData(?, ?);',
+        [userData.id, userData.uid]);
+  const data = response[0][0];
+  return res.json({
+    ...data,
+  });
+});
+

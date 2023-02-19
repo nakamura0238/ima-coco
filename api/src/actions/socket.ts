@@ -57,13 +57,10 @@ export const socketManager = (io: Server) => {
         const stateComment = obj.data.stateComment;
         const userId = user.id;
 
-
         const sql = 'CALL getUpdatedState(?, ?, ?, ?);';
         const params = [roomId, userId, stateDataId, stateComment];
         const [response] =
             await db.execute<mysql.RowDataPacket[][]>(sql, params);
-
-        // console.log('aaaaaaaaaaa', response[0]);
 
         io.to(roomUnique).emit('updateStateResponse', response[0]);
       }

@@ -1,6 +1,6 @@
-const Join = () => {};
+const display = () => {};
 
-export default Join;
+export default display;
 
 export const getServerSideProps = () => {
   return {

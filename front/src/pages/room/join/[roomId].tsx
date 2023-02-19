@@ -6,6 +6,9 @@ import React from 'react';
 import {returnHeader} from '../../../actions/Cookie';
 import Footer from '../../../components/Footer';
 import {Layout} from '../../../components/Layout';
+import styles from '../../../styles/Join.module.scss';
+import {generateApiLink,
+  generateServerApiLink} from '../../../actions/generateApiLink';
 
 type roomInfo = {
   id?: number,
@@ -15,23 +18,19 @@ type roomInfo = {
   moveTo?: number,
 }
 
-type userData = {
-  id: number,
-  uid: string,
-}
 
 const Join = (props: any) => {
   const route = useRouter();
 
   const roomInfo: roomInfo = props.roomInfo;
-  const userData: userData = props.userData;
+  console.log(props);
 
   const joinRoom = async () => {
     try {
       const headers = returnHeader();
       const response =
         await axios.post(
-            `http://localhost/api/room/join/${roomInfo.roomId}`,
+            generateApiLink(`/room/join/${roomInfo.roomId}`),
             {},
             headers);
 
@@ -44,50 +43,42 @@ const Join = (props: any) => {
 
   return (
     <Layout>
-      <p>Join ページ</p>
-      <p>ルームへの参加</p>
+      <p className={styles.pageTitle}>ルーム参加</p>
 
-      {!roomInfo.message ?
+      <div className={styles.joinContainer}>
+        <p className={styles.label}>ルーム名</p>
+        <h1 className={styles.joinRoomName}>{roomInfo.roomName}</h1>
+        {!roomInfo.message ?
+          <div className={styles.joinBtn}>
+            <button onClick={joinRoom}>参加する</button>
+          </div>:
         <>
-          <h1>{roomInfo.roomName}</h1>
-          <p>{route.query.roomId}</p>
-          <button onClick={joinRoom}>参加する</button>
-        </> :
-        <>
-          <h1>{roomInfo.message}</h1>
+          <p className={styles.message}>{roomInfo.message}</p>
           {roomInfo.moveTo != 0 ?
-            <Link href={`/room/${roomInfo.moveTo}`}>ルームへ移動する</Link> :
+          <div className={styles.moveRoom}>
+            <Link href={`/room/${roomInfo.moveTo}`}>ルームへ移動する</Link>
+          </div> :
           undefined}
-          <Link href={'/'}>トップへ戻る</Link>
         </>
-      }
+        }
+      </div>
       <Footer login={true} />
     </Layout>
   );
 };
 
 
-/**
- * 未参加
- * 参加ずみ
- * 存在しないroom
- */
 export default Join;
-
 
 export const getServerSideProps = async (context: NextPageContext) => {
   try {
-    // const route = useRouter();
     const roomId = context.query.roomId;
 
     // cookieの取得
     const headers = returnHeader(context);
-    console.log('in getServerSideProps: ', headers);
 
     const joinRoomInfo =
-        await axios.get(`http://ima-coco_nginx:80/api/room/join/${roomId}`, headers);
-
-    console.log(joinRoomInfo.data);
+        await axios.get(generateServerApiLink(`/room/join/${roomId}`), headers);
 
     return {
       props: {

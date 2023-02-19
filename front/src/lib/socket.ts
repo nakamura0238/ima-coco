@@ -1,6 +1,8 @@
 import io from 'socket.io-client';
 
-export const socket = io('http://localhost', {
+const socketUrl = 'http://localhost';
+
+export const socket = io(socketUrl, {
   withCredentials: true,
 });
 

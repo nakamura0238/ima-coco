@@ -1,0 +1,61 @@
+.withLogout {
+  display: flex;
+  flex-direction: row;
+  margin: 10px 20px;
+  gap: 10px;
+}
+
+.headLineWithLogout {
+  width: 100%;
+  font-size: 1.4rem;
+  padding: 5px 10px;
+  border-left: 5px solid #666666;
+  border-bottom: 2px solid #666666;
+}
+
+
+.headLine {
+  font-size: 1.4rem;
+  margin: 10px 20px;
+  padding: 5px 10px;
+  border-left: 5px solid #666666;
+  border-bottom: 2px solid #666666;
+}
+
+.value {
+  font-size: 1.2rem;
+  padding-left: 1rem;
+}
+
+.form {
+  padding: 0 20px;
+}
+
+.formInnerBox {
+  padding-bottom: 15px;
+}
+
+.inFormHeadLine {
+  display: inline-block;
+  padding-bottom: 3px;
+  font-size: 1.1rem;
+  color: #666666;
+  line-height: 1.4rem;
+}
+
+.inputBox {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding-left: 1rem;
+  button {
+    flex: 0 0 auto;
+    padding: 0px 20px;
+    background-color: #4488ff;
+    border-radius: 3px;
+    color: #ffffff;
+  }
+  input {
+    width: 100%;
+  }
+}

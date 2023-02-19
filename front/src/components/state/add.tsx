@@ -1,18 +1,16 @@
 import React, {useContext} from 'react';
-import type {NextPageContext} from 'next';
-import {parseCookies} from 'nookies';
 import axios from 'axios';
 import {generateApiLink} from '../../actions/generateApiLink';
 import {useForm, SubmitHandler} from 'react-hook-form';
 import {yupResolver} from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-// import {useSetRecoilState} from 'recoil';
 
-import styles from '../../styles/AddModal.module.scss';
+import modalStyle from '../../styles/Modal.module.scss';
 import {useSetRecoilState} from 'recoil';
 import {stateListState} from '../../states/stateList';
-import {ModalContext} from '../../pages/state';
-// import {stateListState} from '../../states/stateList';
+import {ModalContext} from '../../contexts/ModalContext';
+import {returnHeader} from '../../actions/Cookie';
+import Image from 'next/image';
 
 type insertState = {
   state: string;
@@ -47,52 +45,44 @@ export const AddStateModal: React.FC = () => {
 
   // 送信アクション
   const insertState: SubmitHandler<insertState> = async (data) => {
-    const token = getCookie();
     const reqObject = {
       state: data.state,
     };
-    const headers = {
-      headers: {
-        Authorization: token.testAuthToken,
-      },
-    };
+    const headers = returnHeader();
 
-    const result =
-      await axios.post(generateApiLink('/api/state/'), reqObject, headers);
-    // const resultData = result.data;
-    // setPatienceList(resultData.patiences);
-    // console.log(result);
+    await axios.post(generateApiLink('/state/'), reqObject, headers);
 
     // state情報取得
-    const check = await axios.get('http://localhost/api/state/', headers);
+    const check = await axios.get(generateApiLink('/state/'), headers);
     const checkResult = check.data;
-    console.log('insertState : ', checkResult);
 
     setStateList(checkResult.data.stateData);
 
     reset();
-    closeAction();
-  };
-
-  // Cookie取得
-  const getCookie = (ctx?: NextPageContext) => {
-    const cookie = parseCookies(ctx);
-    return cookie;
+    setModal(undefined);
   };
 
 
   return (
-    <div className={styles.addWanted} onClick={() => setModal(undefined)}>
-      <div className={styles.addWantedInner}
+    <div
+      className={modalStyle.modalOverlay}
+      onClick={() => setModal(undefined)}>
+      <div className={modalStyle.modalInner}
         onClick={(e) => e.stopPropagation()}>
-        <form onSubmit={handleSubmit(insertState)}>
+        <p className={modalStyle.modalHeadLine}>stateの登録</p>
+        <form
+          className={modalStyle.modalForm}
+          onSubmit={handleSubmit(insertState)}>
           <input type="text"
             autoComplete="off"
             {...register('state')}/>
           <p>{errors.state?.message}</p>
-          <button type="submit">登録</button>
+          <button className={modalStyle.updateBtn} type="submit">登録</button>
         </form>
-        <button onClick={() => setModal(undefined)}>閉じる</button>
+        <button
+          className={modalStyle.modalCloseBtn}
+          onClick={() => setModal(undefined)}>
+          <Image src={'/icon/cross.svg'} width={16} height={16}/></button>
       </div>
     </div>
   );

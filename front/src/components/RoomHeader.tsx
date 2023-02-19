@@ -5,6 +5,9 @@ import QRCode from 'qrcode.react';
 import React, {useState} from 'react';
 import {returnHeader} from '../actions/Cookie';
 import styles from '../styles/header.module.scss';
+import toast from 'react-hot-toast';
+import Image from 'next/image';
+import {generateApiLink} from '../actions/generateApiLink';
 
 
 type props = {
@@ -26,10 +29,10 @@ const RoomHeader: React.FC<props> = ({obj}) => {
           <button
             onClick={() => {
               route.push('/room');
-            }}>&lt;</button>
+            }}><Image src={'/icon/arrow_left.svg'} width={24} height={24} />
+          </button>
           <p>{obj.roomName}</p>
         </div>
-        {/* <GenerateJoinUrl roomUnique={obj.roomUnique}/> */}
         <ModalContainer roomUnique={obj.roomUnique} router={route}/>
       </nav>
     </header>
@@ -38,82 +41,6 @@ const RoomHeader: React.FC<props> = ({obj}) => {
 
 export default RoomHeader;
 
-// type joinUrlProps= {
-//   roomUnique: string
-// }
-// const GenerateJoinUrl: React.FC<joinUrlProps> = ({roomUnique}) => {
-//   const [url, setUrl] = useState('');
-
-//   const generateUrl = () => {
-//     setUrl(`localhost/room/join/${roomUnique}`);
-//   };
-//   return (
-//     <>
-//       <p>{url}</p>
-//       {url?
-//         <QRCode
-//           value={url} /> :
-//         undefined}
-//       <button onClick={generateUrl}>参加URL表示</button>
-//     </>
-//   );
-// };
-
-
-// type leaveModalProps = {
-//   roomUnique: string,
-//   router: NextRouter,
-// }
-// const LeaveModal: React.FC<leaveModalProps> = ({roomUnique, router}) => {
-//   const [openModal, setOpenModal] = useState<boolean>(false);
-
-//   // openModal
-//   const openAction = () =>{
-//     setOpenModal(true);
-//   };
-
-//   // closeModal
-//   const closeAction = () =>{
-//     setOpenModal(false);
-//   };
-
-//   const Modal: React.FC = () =>{
-//     const leaveRoom = async () => {
-//       try {
-//       // cookieの取得
-//         const headers = returnHeader();
-//         // ルームの情報を取得
-//         await axios.delete(
-//             `http://localhost/api/room/leave/${roomUnique}`,
-//             headers,
-//         );
-//         router.replace('/room');
-//       } catch (err) {
-//         console.log(err);
-//       }
-//     };
-//     return (
-//       <div className={styles.leaveModal} onClick={closeAction}>
-//         <div className={styles.leaveModalInner}
-//           onClick={(e) => e.stopPropagation()}>
-//           <p>ルームから退出します</p>
-//           <button onClick={closeAction}>キャンセル</button>
-//           <button onClick={leaveRoom}>OK</button>
-//         </div>
-//       </div>
-//     );
-//   };
-
-//   return (
-//     <>
-//       <button onClick={openAction}>退出</button>
-//       {openModal?
-//         <Modal />:
-//         undefined
-//       }
-//     </>
-//   );
-// };
 
 type modalProps = {
   roomUnique: string,
@@ -121,45 +48,65 @@ type modalProps = {
 }
 
 const ModalContainer:React.FC<modalProps> = ({roomUnique, router}) => {
-  const [openJoinUrlModal, setOpenJoinUrlModal] = useState<boolean>(false);
-  const [openLeaveModal, setOpenLeaveModal] = useState<boolean>(false);
+  const [modal, setModal] = useState<React.ReactNode>(undefined);
 
-  // openModal
-  const joinOpenAction = () =>{
-    setOpenJoinUrlModal(true);
-    setOpenLeaveModal(false);
+  const joinCloseAction = () => {
+    setModal(undefined);
   };
-  // closeModal
-  const joinCloseAction = () =>{
-    setOpenJoinUrlModal(false);
-    setOpenLeaveModal(false);
+
+  const copyJoinUrl = () => {
+    const elm: HTMLInputElement =
+      document.getElementById('JoinURL') as HTMLInputElement;
+    const URL = elm?.value as string;
+    console.log(URL);
+    if (navigator.clipboard) {
+      return navigator.clipboard.writeText(URL).then(function() {
+        toast.success('URLをコピーしました', {
+          id: 'success copy',
+          duration: 2000,
+        });
+      });
+    } else {
+      toast.error('コピーに失敗しました', {
+        id: 'deny copy',
+        duration: 2000,
+      });
+    }
   };
 
   const JoinModal: React.FC = () =>{
     const url = `localhost/room/join/${roomUnique}`;
     return (
-      <div className={styles.leaveModal} onClick={joinCloseAction}>
-        <div className={styles.leaveModalInner}
-          onClick={(e) => e.stopPropagation()}>
-          <p>ルーム参加用リンク</p>
-          <p>{url}</p>
-          <QRCode value={url} />
-          <button onClick={joinCloseAction}>閉じる</button>
+      <>
+        <div className={styles.leaveModal} onClick={joinCloseAction}>
+          <div className={styles.leaveModalInner}
+            onClick={(e) => e.stopPropagation()}>
+            <p className={styles.headline}>ルーム参加用リンク</p>
+            <input
+              className={styles.invitationUrl}
+              type="text"
+              id="JoinURL"
+              value={url}
+              readOnly/>
+            <button
+              className={styles.invitationBtn}
+              onClick={copyJoinUrl}>URLをコピー</button>
+            <p className={styles.headline}>ルーム参加用QRコード</p>
+            <QRCode value={url} />
+            <button
+              className={styles.modalCloseBtn}
+              onClick={joinCloseAction}>
+              <Image src={'/icon/cross.svg'} width={16} height={16}/>
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   };
 
 
-  // openModal
-  const leaveOpenAction = () =>{
-    setOpenLeaveModal(true);
-    setOpenJoinUrlModal(false);
-  };
-    // closeModal
   const leaveCloseAction = () =>{
-    setOpenLeaveModal(false);
-    setOpenJoinUrlModal(false);
+    setModal(undefined);
   };
 
   const LeaveModal: React.FC = () =>{
@@ -169,7 +116,7 @@ const ModalContainer:React.FC<modalProps> = ({roomUnique, router}) => {
         const headers = returnHeader();
         // ルームの情報を取得
         await axios.delete(
-            `http://localhost/api/room/leave/${roomUnique}`,
+            generateApiLink(`/room/leave/${roomUnique}`),
             headers,
         );
         router.replace('/room');
@@ -181,9 +128,15 @@ const ModalContainer:React.FC<modalProps> = ({roomUnique, router}) => {
       <div className={styles.leaveModal} onClick={leaveCloseAction}>
         <div className={styles.leaveModalInner}
           onClick={(e) => e.stopPropagation()}>
-          <p>ルームから退出します</p>
-          <button onClick={leaveCloseAction}>キャンセル</button>
-          <button onClick={leaveRoom}>OK</button>
+          <p className={styles.headlineRed}>ルームから退出します</p>
+          <div className={styles.leaveBtnBox}>
+            <button
+              className={styles.cancelBtn}
+              onClick={leaveCloseAction}>キャンセル</button>
+            <button
+              className={styles.leaveBtn}
+              onClick={leaveRoom}>退出する</button>
+          </div>
         </div>
       </div>
     );
@@ -191,16 +144,11 @@ const ModalContainer:React.FC<modalProps> = ({roomUnique, router}) => {
 
   return (
     <>
-      <button onClick={joinOpenAction}>招待</button>
-      {openJoinUrlModal?
-        <JoinModal />:
-        undefined
-      }
-      <button onClick={leaveOpenAction}>退出</button>
-      {openLeaveModal?
-        <LeaveModal />:
-        undefined
-      }
+      <div className={styles.invLeave}>
+        <button onClick={()=>setModal(<JoinModal/>)}>招待</button>
+        <button onClick={() => setModal(<LeaveModal/>)}>退出</button>
+      </div>
+      {modal}
     </>
   );
 };

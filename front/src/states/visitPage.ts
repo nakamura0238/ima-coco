@@ -3,8 +3,8 @@ import {atom} from 'recoil';
 /**
  * 0: none
  * 1: index
- * 2: patience
- * 3: wanted
+ * 2: state
+ * 3: room
  * 4: login
  * 5: signup
  * 6: user

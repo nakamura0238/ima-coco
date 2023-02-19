@@ -85,12 +85,6 @@ stateRouter.put('/', auth,
 stateRouter.delete('/:id', auth,
     async (_req: Request, res: Response, next: NextFunction) => {
       try {
-        const reqBody = _req.body; // リクエスト情報
-        const user = res.locals.userData; // ユーザー情報
-
-        // console.log('reqBody:', reqBody);
-        // console.log('user:', user);
-
         const id = Number(_req.params.id);
 
         await db.execute<mysql.RowDataPacket[][]>(
@@ -105,3 +99,27 @@ stateRouter.delete('/:id', auth,
       }
     },
 );
+
+// state使用ルーム取得
+stateRouter.get('/:id', auth, async (_req: Request, res: Response) => {
+  try {
+    const id = Number(_req.params.id);
+
+    const [response] =
+    await db.execute<mysql.RowDataPacket[][]>(
+        'CALL getStateUseRoom(?)',
+        [id]);
+    const rooms = response[0];
+
+    const resRooms = rooms;
+
+    return res.json({
+      stateData: resRooms,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.json({
+      check: false,
+    });
+  }
+});

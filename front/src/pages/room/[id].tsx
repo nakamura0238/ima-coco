@@ -1,22 +1,18 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {NextPageContext} from 'next';
-import {Layout} from '../../components/Layout';
-import RoomHeader from '../../components/RoomHeader';
-import Footer from '../../components/Footer';
 import axios from 'axios';
 import {useSetRecoilState} from 'recoil';
-import {visitPageState} from '../../states/visitPage';
 
 import {socket} from '../../lib/socket';
 import {returnHeader} from '../../actions/Cookie';
-
-import styles from '../../styles/inRoom.module.scss';
-
+import {Layout} from '../../components/Layout';
+import RoomHeader from '../../components/RoomHeader';
+import Footer from '../../components/Footer';
 import ShowStateList from '../../components/room/ShowStateList';
 import ShowStateButton from '../../components/room/ShowStateButton';
-
-// import QRCode from 'qrcode.react';
-// import {useRouter} from 'next/router';
+import {visitPageState} from '../../states/visitPage';
+import {UserContext} from '../../contexts/UserContext';
+import {generateServerApiLink} from '../../actions/generateApiLink';
 
 type roomInfo = {
   id: number;
@@ -51,21 +47,29 @@ type propsObj = {
   roomUnique: string,
 }
 
+
 const Room = (props: inRoomInfo) => {
-  console.log('run Room');
   const roomInfo = props.roomInfo;
   const states = props.states;
   const userStates = props.userStates;
-
-  const id: number = roomInfo.id;
+  // const id: number = roomInfo.id;
   const roomUnique = roomInfo.roomId;
-
-  console.log('roomInfo', roomInfo);
 
   const headerProps: propsObj = {
     roomName: roomInfo.roomName,
     roomUnique: roomUnique,
   };
+
+  const [user, setUser] = useState(props.userData);
+
+  // 並び替え処理
+  const UID = user.uid;
+  const myId = states.findIndex((element) =>
+    element.uid === UID);
+  const myState = states[myId];
+  states.splice(myId, 1);
+  states.unshift(myState);
+  // 並び替え処理ここまで
 
   // 現在のページ取得
   const setVisitPage = useSetRecoilState(visitPageState);
@@ -76,15 +80,25 @@ const Room = (props: inRoomInfo) => {
   }, []);
 
   return (
-    <Layout>
-      <RoomHeader obj={headerProps}/>
-      <p>ルームID：{id}</p>
-      <ShowStateList stateListData={states} />
-      <ShowStateButton
-        userStates={userStates}
-        roomUnique={roomUnique} />
-      <Footer login={true} />
-    </Layout>
+    <UserContext.Provider value={{user}}>
+      <Layout>
+        <RoomHeader obj={headerProps}/>
+
+        <ShowStateList stateListData={states} />
+        <div>
+          <ShowStateButton
+            userStates={userStates}
+            roomUnique={roomUnique} />
+          <Footer login={true} />
+        </div>
+        <style jsx>{`
+        div {
+          position: sticky;
+          bottom: 0;
+        }
+      `}</style>
+      </Layout>
+    </UserContext.Provider>
   );
 };
 
@@ -98,7 +112,7 @@ export const getServerSideProps = async (context: NextPageContext) => {
     const headers = returnHeader(context);
     // ルームの情報を取得
     const roomInfo = await axios.get(
-        `http://ima-coco_nginx:80/api/room/${id}`,
+        generateServerApiLink(`/room/${id}`),
         headers,
     );
     const roomInfoData = roomInfo.data;
@@ -128,22 +142,3 @@ export const getServerSideProps = async (context: NextPageContext) => {
     };
   }
 };
-
-// ルームへのユーザー追加
-/**
- * 全て招待制
- * ・QRコードからルームへ参加
- * ・URLで参加
- *    アクセス時にルーム追加画面に遷移、パラメーターをもとに参加するルームを表示
- *    ルームに参加情報をcookieに保存(有効時間は30mくらい？)
- *    ログインしている場合→参加orキャンセル キャンセルの場合cookieを削除
- *    ログインしていない場合→ログイン画面に遷移、ログイン後参加画面に遷移
- *    ユーザー登録していない場合→新規登録後、ログインしていない場合と同じ処理
- *
- * ルームIDは暗号化してパラメータにつける（可逆暗号）roomID
- *
- * QRコード、URLの表示はモーダルで行う
- * roomIDは暗号化し、roomID使用時には解号して使用する
- * keyは「NEXT_PUBLIC_ROOMID_KEY」
- *
- */

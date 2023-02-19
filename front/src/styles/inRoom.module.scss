@@ -2,7 +2,6 @@
   font-size: 2rem;
 }
 
-
 /**
 *  stateList
 **/
@@ -11,15 +10,34 @@
   flex-direction: column;
   gap: 5px;
   padding: 20px;
+  margin-bottom: auto;
 }
 
 .stateItem {
   width: 100%;
   padding: 5px 10px;
-  border-top: 1px solid #333333;
-  border-right: 2px solid #333333;
-  border-bottom: 2px solid #333333;
-  border-left: 1px solid #333333;
+  // border-top: 1px solid #333333;
+  // border-right: 2px solid #333333;
+  // border-bottom: 2px solid #333333;
+  // border-left: 1px solid #333333;
+  border: 2px solid #888888;
+  border-radius: 5px;
+}
+
+.name {
+  color: #333333;
+  line-height: 1.2rem;
+}
+
+.state {
+  font-size: 1.2rem;
+}
+
+.comment {
+  height: 1.2rem;
+  color: #888888;
+  font-size: 1rem;
+  line-height: 1.2rem;
 }
 
 
@@ -27,18 +45,73 @@
 *  stateButtonList
 **/
 .stateButtonContainer {
+  display: flex;
+  flex-direction: column;
+  width: 95%;
+  margin: 0 auto;
   margin-top: auto;
-  padding: 10px;
+  border-radius: 5px 5px 0 0;
+  box-shadow: 0 0 5px grey;
+}
+
+.stateButtonClose {
+  display: flex;
+  justify-content: center;
+  button {
+    width: 100%;
+    padding: 5px;
+    background-color: #CFD8DC;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0 ;
+    text-align: center;
+  }
+  img {
+    transition: transform 0.3s;
+  }
+}
+
+.closing{
+  transform: rotateX(180deg);
 }
 
 .stateButtonBox {
+  height: 7.5rem;
+  padding: 1rem;
+  background-color: #ffffff;
+  overflow: hidden;
+  // border: 2px solid #333333;
+  transition:
+    height 0.2s,
+    padding 0.2s;
+}
+
+.isClose {
+  height: 0px;
+  padding: 0 1rem;
+  pointer-events: none;
+}
+
+.stateButtonList {
   display: flex;
   gap: 10px;
+  overflow-x: scroll;
+  margin-bottom: 1rem;
 }
 
 .stateButton {
-  display: inline-block;
-  padding: 5px;
+  // min-width: 100px;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  padding: 0 10px;
   border: 1px solid #888888;
   border-radius: 5px;
+  white-space: inherit;
+  &:hover {
+    background-color: #dddddd;
+  }
+}
+
+.stateComment {
+  width: 100%;
+  padding: 5px;
 }

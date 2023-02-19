@@ -23,6 +23,12 @@ type Inputs = {
   password: string;
 };
 
+type AuthLoginResponse = {
+  check: boolean,
+  message: string,
+  token: string,
+}
+
 // バリデーション規則
 const validate = yup.object({
   uid: yup
@@ -47,7 +53,7 @@ const LogIn = () => {
   const setVisitPage = useSetRecoilState(visitPageState);
   useEffect(() => {
     setVisitPage(4);
-    console.log(window.history);
+    // console.log(window.history);
   }, []);
 
   const {
@@ -75,15 +81,13 @@ const LogIn = () => {
     };
     try {
       const result =
-        await axios.post(generateApiLink('/api/user/login'), reqObject);
-      console.log('login result: ', result.data);
+        await axios.post(generateApiLink('/user/login'), reqObject);
       const resultData: AuthLoginResponse = result.data;
 
-      console.log(resultData.message);
       setCookie(undefined, 'testAuthToken', resultData.token, {
         maxAge: 7 * 24 * 60 * 60,
       } );
-      route.push('/');
+      route.push('/room');
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const errObj:any = err.response?.data;
@@ -96,19 +100,22 @@ const LogIn = () => {
 
   return (
     <Layout>
-      <h2>loginページ</h2>
+      <h2 className={styles.pageTitle}>Login</h2>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <p>ID</p>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className={styles.form}>
+        <p className={styles.headline}>ID</p>
         <input
           type={'text'}
           autoComplete="off"
           {...register('uid')}/>
-        <p>{errors.uid?.message}</p>
+        <p className={styles.errorMessage}>{errors.uid?.message}</p>
 
-        <InputPass register={register('password')}/>
-        <p>{errors.password?.message}</p>
-        <button type="submit">Submit</button>
+        <InputPass register={register('password')} errors={errors}/>
+        <div className={styles.loginBtn}>
+          <button type="submit">ログイン</button>
+        </div>
       </form>
       <Footer login={false}></Footer>
     </Layout>
@@ -116,7 +123,7 @@ const LogIn = () => {
 };
 
 const InputPass = (props: any) => {
-  const {register} = props;
+  const {register, errors} = props;
   const [look, setLook] = useState(false);
 
   const lookPass = () => {
@@ -133,7 +140,7 @@ const InputPass = (props: any) => {
 
   return (
     <>
-      <p>Password</p>
+      <p className={styles.headline}>Password</p>
       <div className={styles.inputPass}>
         <input
           id="textPass"
@@ -141,16 +148,14 @@ const InputPass = (props: any) => {
           autoComplete="off"
           {...register}/>
         <span onClick={lookPass} className={styles.inputPassBtn}>
-
           <Image
             src={look ?'/icon/eye-slash-solid.svg': '/icon/eye-solid.svg'}
             width={20}
             height={20}
             objectFit={'contain'} />
-
         </span>
-
       </div>
+      <p className={styles.errorMessage}>{errors.password?.message}</p>
     </>
   );
 };

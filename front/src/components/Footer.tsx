@@ -21,18 +21,13 @@ const Footer: React.FC<props> = ({login}) => {
   const buttonLogin: buttonType[] = [
     {
       path: '/room',
-      label: 'room',
+      label: 'ROOM',
       pageNum: 3,
     },
     {
-      path: '/state',
-      label: 'state',
-      pageNum: 2,
-    },
-    {
       path: '/user',
-      label: 'user',
-      pageNum: 6,
+      label: 'USER',
+      pageNum: 2,
     },
     {
       path: '/',
@@ -44,12 +39,12 @@ const Footer: React.FC<props> = ({login}) => {
   const buttonLogout: buttonType[] = [
     {
       path: '/login',
-      label: 'ログイン',
+      label: 'LOGIN',
       pageNum: 4,
     },
     {
       path: '/signup',
-      label: 'サインアップ',
+      label: 'SIGN UP',
       pageNum: 5,
     },
     {
@@ -71,7 +66,7 @@ const Footer: React.FC<props> = ({login}) => {
               ${btnVal.pageNum != visitPage?
                 undefined:
                 styles.selected }
-              ${styles.navButton} 
+              ${styles.navButton}
               ${login? styles.navLogin : styles.navLogout}
               `}>
             {btnVal.label}

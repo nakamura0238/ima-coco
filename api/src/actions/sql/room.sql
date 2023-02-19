@@ -105,7 +105,7 @@ CREATE PROCEDURE getJoinRoomInfo(IN input_roomId varchar(191), IN input_userId i
     WHERE rooms.roomId = input_roomId;
 
     IF existRoom IS NULL THEN
-      SELECT 
+      SELECT
         0 as moveTo,
         "参加可能なルームが存在しません" as message;
       LEAVE main;
@@ -121,10 +121,11 @@ CREATE PROCEDURE getJoinRoomInfo(IN input_roomId varchar(191), IN input_userId i
       rooms.roomId = input_roomId
       AND room_user.userId = input_userId
       AND room_user.delete_flg = FALSE;
-    
+
     IF joinRoomId IS NOT NULL THEN
-      SELECT 
+      SELECT
         rooms.id as moveTo,
+        rooms.roomName,
         "参加済みのルームです" as message
       FROM rooms
       WHERE
@@ -157,7 +158,7 @@ CREATE PROCEDURE joinRoom(IN input_roomId varchar(191), IN input_userId int(11))
     # 過去に参加していた
     SELECT room_user.id
     INTO deletedID
-    FROM room_user 
+    FROM room_user
     WHERE
       room_user.roomId = joinRoomId
       AND room_user.userId = input_userId
@@ -242,7 +243,7 @@ DELIMITER ;
 # stateリスト取得
 DROP PROCEDURE IF EXISTS getStateList;
 DELIMITER //
-CREATE PROCEDURE getStateList(IN input_roomId int(11))
+CREATE PROCEDURE getStateList(IN input_roomId int(11), IN input_userId int(11))
   BEGIN
     SELECT
       states.comment
@@ -259,8 +260,8 @@ CREATE PROCEDURE getStateList(IN input_roomId int(11))
     INNER JOIN state_data
       ON states.stateDataId = state_data.id
     WHERE
-      rooms.id = input_roomId;
-      AND room_user.delete_flg = FALSE
+      rooms.id = input_roomId
+      AND room_user.delete_flg = FALSE;
   END//
 DELIMITER ;
 
@@ -277,6 +278,32 @@ CREATE PROCEDURE checkJoinRoom(IN input_roomId int(11), IN input_userId int(11))
     WHERE
       room_user.roomId = input_roomId
       AND room_user.userId = input_userId
+      AND room_user.delete_flg = FALSE;
+  END//
+DELIMITER ;
+
+
+# 表示用プロシージャ
+DROP PROCEDURE IF EXISTS getDisplayStateList;
+DELIMITER //
+CREATE PROCEDURE getDisplayStateList(IN input_roomId varchar(191))
+  BEGIN
+    SELECT
+      states.comment
+      , state_data.state
+      , users.uid
+      , users.displayName
+    FROM rooms
+    INNER JOIN room_user
+      ON rooms.id = room_user.roomId
+    INNER JOIN states
+      ON room_user.id = states.roomUserId
+    INNER JOIN users
+      ON room_user.userId = users.id
+    INNER JOIN state_data
+      ON states.stateDataId = state_data.id
+    WHERE
+      rooms.roomId = input_roomId
       AND room_user.delete_flg = FALSE;
   END//
 DELIMITER ;
