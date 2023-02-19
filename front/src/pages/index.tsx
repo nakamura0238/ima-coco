@@ -7,8 +7,9 @@ import Footer from '../components/Footer';
 import {visitPageState} from '../states/visitPage';
 import {useSetRecoilState} from 'recoil';
 import {returnHeader} from '../actions/Cookie';
-import {logout} from '../actions/Logout';
 import {generateServerApiLink} from '../actions/generateApiLink';
+import Image from 'next/image';
+import styles from '../styles/Top.module.scss';
 
 
 const Home = (props: any) => {
@@ -21,18 +22,12 @@ const Home = (props: any) => {
 
   return (
     <Layout>
-      <h1>TOPページ</h1>
-      {login?
-        <div>
-          <button onClick={logout}>ログアウト</button>
-        </div>:
-        undefined
-      }
-      <br />
-      <p>サービスの使用方法について</p>
-
+      <div className={styles.background}>
+        <div className={styles.logo}>
+          <Image src={'/logo.svg'} width={400} height={104}/>
+        </div>
+      </div>
       <Footer login={login}></Footer>
-
     </Layout>
   );
 };
