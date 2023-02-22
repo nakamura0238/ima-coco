@@ -135,7 +135,7 @@ const ModalContainer:React.FC<modalProps> = ({roomUnique, router}) => {
               onClick={leaveCloseAction}>キャンセル</button>
             <button
               className={styles.leaveBtn}
-              onClick={leaveRoom}>退出する</button>
+              onClick={leaveRoom}>退出</button>
           </div>
         </div>
       </div>
