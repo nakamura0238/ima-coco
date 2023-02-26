@@ -3,11 +3,8 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  // position: sticky;
-  // bottom: 0;
   position: fixed;
   bottom: 0;
-  left: 0;
   width: 100%;
   max-width: 640px;
   margin-top: auto;
@@ -22,8 +19,6 @@
   padding: 10px;
   background-color: #82B1FF;
   box-shadow: 0 0 5px gray;
-  /* background-color: #aaaaaa; */
-  // background-color: rgba(0, 0, 0, 0.3);
 }
 
 .navButton {
